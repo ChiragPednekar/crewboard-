@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * CrewBoard design tokens — "film-studio control room".
+ * Values are HSL channels so Tailwind can apply alpha (e.g. bg-primary/10).
+ * Dark is the default (<html class="dark">); light is a warm-paper variant.
+ */
+@layer base {
+  :root {
+    /* light */
+    --background: 45 20% 96%;        /* #F7F6F3 */
+    --surface: 0 0% 100%;            /* #FFFFFF */
+    --surface-2: 43 20% 93%;         /* #F1EFEA */
+    --border: 42 16% 87%;            /* #E4E1DA */
+    --input: 42 16% 82%;
+    --foreground: 240 14% 10%;       /* #16161D */
+    --muted-foreground: 240 6% 39%;  /* #5E5E6B — 6.5:1 on white */
+    --primary: 37 91% 55%;           /* #F5A524 amber (fills) */
+    --primary-foreground: 240 15% 5%;
+    --primary-text: 35 100% 32%;     /* #A15F00 — amber readable on light */
+    --violet: 247 84% 69%;           /* #7C6CF2 */
+    --violet-text: 247 63% 50%;
+    --success: 155 44% 44%;
+    --success-text: 155 55% 28%;
+    --warning: 39 67% 55%;
+    --warning-text: 35 80% 32%;
+    --danger: 1 55% 59%;
+    --danger-text: 1 60% 42%;
+    --danger-foreground: 0 0% 100%;
+    --info: 220 82% 65%;
+    --info-text: 220 70% 42%;
+    --gold: 43 89% 52%;
+    --silver: 220 9% 62%;
+    --bronze: 25 55% 50%;
+    /* medal colours as text/icons on light surfaces (≥ 4.5:1) */
+    --gold-text: 36 95% 29%;
+    --silver-text: 220 9% 38%;
+    --bronze-text: 24 62% 33%;
+    --ring: 37 91% 45%;
+    --shadow: 30 20% 20%;
+    --radius: 0.75rem;
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: 240 15% 5%;        /* #0B0B0F */
+    --surface: 240 14% 10%;          /* #15151C */
+    --surface-2: 240 14% 13%;        /* #1C1C25 */
+    --border: 240 11% 17%;           /* #26262F */
+    --input: 240 10% 22%;
+    --foreground: 240 16% 94%;       /* #EDEDF2 */
+    --muted-foreground: 240 7% 64%;  /* #9A9AA8 — 6.8:1 on surface */
+    --primary: 37 91% 55%;           /* #F5A524 */
+    --primary-foreground: 240 15% 5%;
+    --primary-text: 37 91% 60%;
+    --violet: 247 84% 69%;           /* #7C6CF2 (fills, charts) */
+    --violet-text: 248 86% 80%;      /* #A498F7-ish for text */
+    --success: 155 44% 44%;          /* #3FA37A muted */
+    --success-text: 155 45% 62%;
+    --warning: 39 67% 55%;           /* #D9A441 */
+    --warning-text: 39 75% 66%;
+    --danger: 1 55% 59%;             /* #D0605E */
+    --danger-text: 1 70% 72%;
+    --danger-foreground: 0 0% 100%;
+    --info: 220 82% 65%;             /* #5B8DEF */
+    --info-text: 220 85% 76%;
+    --gold: 43 89% 58%;
+    --silver: 220 12% 72%;
+    --bronze: 25 55% 56%;
+    --gold-text: 43 89% 58%;
+    --silver-text: 220 12% 72%;
+    --bronze-text: 25 55% 60%;
+    --ring: 37 91% 55%;
+    --shadow: 240 30% 2%;
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    min-height: 100dvh;
+  }
+
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Subtle film-grain vignette used behind hero areas */
+  .studio-glow {
+    background:
+      radial-gradient(60rem 30rem at 10% -10%, hsl(var(--primary) / 0.08), transparent 60%),
+      radial-gradient(50rem 30rem at 110% 10%, hsl(var(--violet) / 0.08), transparent 60%);
+  }
+  /* Avatar initials: one hue per person (--avatar-h), readable in both themes */
+  .avatar-fallback {
+    background: hsl(var(--avatar-h) 45% 50% / 0.16);
+    color: hsl(var(--avatar-h) 60% 26%);
+  }
+  .dark .avatar-fallback {
+    background: hsl(var(--avatar-h) 45% 50% / 0.18);
+    color: hsl(var(--avatar-h) 60% 72%);
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Seed: Priya, strong month",
+    "weights": { "points": 60, "completion": 20, "punctuality": 10, "discretionary": 10 },
+    "metrics": { "assigned": 6, "approved": 6, "submitted": 6, "onTime": 5, "pointsAwarded": 69, "maxPoints": 75 },
+    "discretionary": 9.5,
+    "bonus": 0,
+    "expected": { "pointsPct": 0.92, "completionPct": 1, "punctualityPct": 0.8333, "baseScore": 93.03, "totalScore": 93.03 }
+  },
+  {
+    "name": "Seed: Arjun, with bonus",
+    "weights": { "points": 60, "completion": 20, "punctuality": 10, "discretionary": 10 },
+    "metrics": { "assigned": 6, "approved": 6, "submitted": 6, "onTime": 5, "pointsAwarded": 81, "maxPoints": 90 },
+    "discretionary": 8.5,
+    "bonus": 2,
+    "expected": { "pointsPct": 0.9, "completionPct": 1, "punctualityPct": 0.8333, "baseScore": 90.83, "totalScore": 92.83 }
+  },
+  {
+    "name": "No tasks assigned: only discretionary counts",
+    "weights": { "points": 60, "completion": 20, "punctuality": 10, "discretionary": 10 },
+    "metrics": { "assigned": 0, "approved": 0, "submitted": 0, "onTime": 0, "pointsAwarded": 0, "maxPoints": 0 },
+    "discretionary": 5,
+    "bonus": 0,
+    "expected": { "pointsPct": 0, "completionPct": 0, "punctualityPct": 0, "baseScore": 5, "totalScore": 5 }
+  },
+  {
+    "name": "Nothing submitted: punctuality is 0",
+    "weights": { "points": 60, "completion": 20, "punctuality": 10, "discretionary": 10 },
+    "metrics": { "assigned": 4, "approved": 0, "submitted": 0, "onTime": 0, "pointsAwarded": 0, "maxPoints": 40 },
+    "discretionary": 10,
+    "bonus": 0,
+    "expected": { "pointsPct": 0, "completionPct": 0, "punctualityPct": 0, "baseScore": 10, "totalScore": 10 }
+  },
+  {
+    "name": "Repeating fractions round half-up at 4dp then 2dp",
+    "weights": { "points": 60, "completion": 20, "punctuality": 10, "discretionary": 10 },
+    "metrics": { "assigned": 3, "approved": 1, "submitted": 3, "onTime": 2, "pointsAwarded": 20, "maxPoints": 30 },
+    "discretionary": 7.25,
+    "bonus": 0,
+    "expected": { "pointsPct": 0.6667, "completionPct": 0.3333, "punctualityPct": 0.6667, "baseScore": 60.59, "totalScore": 60.59 }
+  },
+  {
+    "name": "Custom weights 50/25/15/10 with bonus",
+    "weights": { "points": 50, "completion": 25, "punctuality": 15, "discretionary": 10 },
+    "metrics": { "assigned": 8, "approved": 7, "submitted": 8, "onTime": 8, "pointsAwarded": 150, "maxPoints": 175 },
+    "discretionary": 8,
+    "bonus": 5,
+    "expected": { "pointsPct": 0.8571, "completionPct": 0.875, "punctualityPct": 1, "baseScore": 87.73, "totalScore": 92.73 }
+  },
+  {
+    "name": "Exact half at the 4th decimal (1/32) rounds up",
+    "weights": { "points": 60, "completion": 20, "punctuality": 10, "discretionary": 10 },
+    "metrics": { "assigned": 32, "approved": 1, "submitted": 0, "onTime": 0, "pointsAwarded": 1, "maxPoints": 32 },
+    "discretionary": 0,
+    "bonus": 0,
+    "expected": { "pointsPct": 0.0313, "completionPct": 0.0313, "punctualityPct": 0, "baseScore": 2.5, "totalScore": 2.5 }
+  },
+  {
+    "name": "Perfect month",
+    "weights": { "points": 60, "completion": 20, "punctuality": 10, "discretionary": 10 },
+    "metrics": { "assigned": 5, "approved": 5, "submitted": 5, "onTime": 5, "pointsAwarded": 70, "maxPoints": 70 },
+    "discretionary": 10,
+    "bonus": 3,
+    "expected": { "pointsPct": 1, "completionPct": 1, "punctualityPct": 1, "baseScore": 100, "totalScore": 103 }
+  }
+]

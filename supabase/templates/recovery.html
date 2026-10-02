@@ -1,0 +1,14 @@
+<div style="background:#0B0B0F;padding:32px 16px;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;color:#EDEDF2">
+  <div style="max-width:480px;margin:0 auto;background:#15151C;border:1px solid #26262F;border-radius:16px;padding:32px">
+    <p style="margin:0 0 24px;font-size:18px;font-weight:600">Crew<span style="color:#F5A524">Board</span></p>
+    <h1 style="margin:0 0 8px;font-size:22px">Reset your password</h1>
+    <p style="margin:0 0 24px;color:#9A9AA8;font-size:14px;line-height:1.6">
+      Someone (hopefully you) asked to reset the password for {{ .Email }}. This link works once and expires in an hour.
+    </p>
+    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery"
+       style="display:inline-block;background:#F5A524;color:#0B0B0F;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:10px">
+      Choose a new password
+    </a>
+    <p style="margin:24px 0 0;color:#9A9AA8;font-size:12px">If you didn’t ask for this, you can ignore this email.</p>
+  </div>
+</div>

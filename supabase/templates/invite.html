@@ -1,0 +1,14 @@
+<div style="background:#0B0B0F;padding:32px 16px;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;color:#EDEDF2">
+  <div style="max-width:480px;margin:0 auto;background:#15151C;border:1px solid #26262F;border-radius:16px;padding:32px">
+    <p style="margin:0 0 24px;font-size:18px;font-weight:600">Crew<span style="color:#F5A524">Board</span></p>
+    <h1 style="margin:0 0 8px;font-size:22px">You’re on the crew</h1>
+    <p style="margin:0 0 24px;color:#9A9AA8;font-size:14px;line-height:1.6">
+      Your studio has created a CrewBoard account for {{ .Email }}. Set a password to see your monthly plan, tasks and standings.
+    </p>
+    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite"
+       style="display:inline-block;background:#F5A524;color:#0B0B0F;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:10px">
+      Set my password
+    </a>
+    <p style="margin:24px 0 0;color:#9A9AA8;font-size:12px">This link works once. Ask your admin for a new invite if it expires.</p>
+  </div>
+</div>
