@@ -75,6 +75,9 @@ describe('parsing helpers', () => {
     expect(parseStatus(' SUBMITTED ')).toBe('submitted');
     expect(parseStatus('Revision Requested')).toBe('revision_requested');
     expect(parseStatus('done')).toBe('submitted');
+    expect(parseStatus('Completed')).toBe('submitted');
+    expect(parseStatus('complete')).toBe('submitted');
+    expect(parseStatus('Finished')).toBe('submitted');
     expect(parseStatus('maybe')).toBeNull();
   });
 
@@ -138,12 +141,23 @@ describe('planSheetToApp', () => {
     expect(p.actions[0]).toMatchObject({ submittedAt: NOW.toISOString() });
   });
 
-  it('Submitted without a link is a bad_link and keeps the app status', () => {
+  it('Completed without a link is enough: it hands the work in with no link', () => {
     const t = task({ status: 'in_progress' });
-    const p = plan(t, row(t, { status: 'Submitted' }));
+    const p = plan(t, row(t, { status: 'Completed' }));
+    expect(p.actions).toEqual([{ type: 'submit', taskId: 't1', links: [], notes: null, submittedAt: null, rowNumber: 2 }]);
+    expect(p.events.filter((e) => e.kind === 'bad_link')).toEqual([]);
+  });
+
+  it('Completed again on work already handed in does not create another version', () => {
+    const t = task({ status: 'submitted', latestLinks: [] });
+    const p = plan(t, row(t, { status: 'Done' }), { state: { ...written(t), lastStatus: 'In Progress' } });
     expect(p.actions).toEqual([]);
-    expect(p.events[0]).toMatchObject({ kind: 'bad_link', taskId: 't1', detail: { reason: 'Submitted without a deliverable link' } });
-    expect(p.rewrite.has('t1')).toBe(true);
+  });
+
+  it('Completed on a revision request resubmits even without a link', () => {
+    const t = task({ status: 'revision_requested', latestLinks: ['https://youtu.be/old'] });
+    const p = plan(t, row(t, { status: 'Completed', link: '' }));
+    expect(p.actions).toMatchObject([{ type: 'submit', links: [] }]);
   });
 
   it('a malformed link is a bad_link, and the typed text is kept in the sheet', () => {

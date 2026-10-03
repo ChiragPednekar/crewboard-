@@ -521,8 +521,10 @@ export type Database = {
           last_rows_updated: number
           last_status: string | null
           last_synced_at: string | null
+          ping_token_hash: string | null
           provisioned_at: string | null
           spreadsheet_id: string
+          sync_requested_at: string | null
           tab_name: string
           updated_at: string
           videographer_id: string
@@ -535,8 +537,10 @@ export type Database = {
           last_rows_updated?: number
           last_status?: string | null
           last_synced_at?: string | null
+          ping_token_hash?: string | null
           provisioned_at?: string | null
           spreadsheet_id: string
+          sync_requested_at?: string | null
           tab_name?: string
           updated_at?: string
           videographer_id: string
@@ -549,8 +553,10 @@ export type Database = {
           last_rows_updated?: number
           last_status?: string | null
           last_synced_at?: string | null
+          ping_token_hash?: string | null
           provisioned_at?: string | null
           spreadsheet_id?: string
+          sync_requested_at?: string | null
           tab_name?: string
           updated_at?: string
           videographer_id?: string
@@ -1423,6 +1429,14 @@ export type Database = {
       }
       is_privileged: { Args: never; Returns: boolean }
       is_service_context: { Args: never; Returns: boolean }
+      issue_sheet_ping_tokens: {
+        Args: { p_spreadsheet_id: string }
+        Returns: {
+          config_id: string
+          tab_name: string
+          token: string
+        }[]
+      }
       log_activity: {
         Args: {
           p_action: string
