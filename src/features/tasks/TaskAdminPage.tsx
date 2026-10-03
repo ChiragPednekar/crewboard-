@@ -286,7 +286,6 @@ function SubmissionsCard({ task, firstName }: { task: TaskDetail; firstName: str
                     {s.links.map((l) => (
                       <LinkPreviewCard key={l} url={l} />
                     ))}
-                    {s.links.length === 0 && <p className="text-sm text-muted-foreground">Marked Completed in the sheet, without a link.</p>}
                   </div>
                   {s.notes && <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">“{s.notes}”</p>}
                   {review && (

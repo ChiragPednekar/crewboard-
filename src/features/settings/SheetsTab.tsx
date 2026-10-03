@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, CheckCircle2, Copy, ExternalLink, Link2, MoreHorizontal, RefreshCw, Settings2, Trash2, Wrench, XCircle, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Copy, ExternalLink, Link2, MoreHorizontal, RefreshCw, Settings2, Trash2, Wrench, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Chip } from '@/components/Chips';
@@ -17,13 +17,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useCrewOptions } from '@/features/lookups/api';
 import { formatDateTime, timeAgo } from '@/lib/dates';
-import { env } from '@/lib/env';
 import { friendlyError } from '@/lib/errors';
 import { sheetUrl, spreadsheetIdFrom } from '@/lib/sheets';
 import { cn } from '@/lib/utils';
@@ -33,7 +31,6 @@ import {
   type SyncResult,
   useAppSettings,
   useDeleteSheetConfig,
-  useIssuePingTokens,
   useRunSheets,
   useSaveSheetConfig,
   useSheetConfigs,
@@ -126,13 +123,12 @@ export function SheetsTab() {
                 onCheckedChange={(on) =>
                   update.mutate(
                     { sync_enabled: on },
-                    { onSuccess: () => toast.success(on ? 'Automatic sync on' : 'Automatic sync paused'), onError: (e) => toast.error(friendlyError(e)) },
+                    { onSuccess: () => toast.success(on ? 'Automatic sync on (every 10 minutes)' : 'Automatic sync paused'), onError: (e) => toast.error(friendlyError(e)) },
                   )
                 }
               />
               <div>
-                <Label htmlFor="sync-enabled">Sync automatically</Label>
-                <p className="text-xs text-muted-foreground">Every 10 minutes, and within seconds of a sheet edit once Instant sync is set up.</p>
+                <Label htmlFor="sync-enabled">Sync automatically every 10 minutes</Label>
                 {info.data && !info.data.cronSecretSet && <p className="text-xs text-warning-text">SYNC_CRON_SECRET isn’t set, so the schedule can’t call the sync yet.</p>}
               </div>
             </div>
@@ -254,7 +250,7 @@ export function SheetsTab() {
         </CardContent>
       </Card>
 
-      <AppsScriptCard configs={configs.data ?? []} names={names} />
+      <AppsScriptCard tabs={(configs.data ?? []).map((c) => c.tab_name)} />
 
       {connect && (
         <ConnectSheetDialog
@@ -395,97 +391,31 @@ function PersonRow({
   );
 }
 
-function AppsScriptCard({ configs, names }: { configs: SheetConfigRow[]; names: Map<string, string> }) {
-  const issue = useIssuePingTokens();
-  const spreadsheets = useMemo(() => {
-    const m = new Map<string, { people: string[]; ready: boolean }>();
-    for (const c of configs) {
-      const e = m.get(c.spreadsheet_id) ?? { people: [], ready: true };
-      e.people.push(names.get(c.videographer_id) ?? c.tab_name);
-      e.ready &&= Boolean(c.ping_token_hash);
-      m.set(c.spreadsheet_id, e);
-    }
-    return [...m.entries()].map(([id, e]) => ({ id, label: e.people.sort().join(', '), ready: e.ready }));
-  }, [configs, names]);
-  const [chosen, setChosen] = useState<string>('');
-  const [script, setScript] = useState<{ id: string; code: string } | null>(null);
-  const selected = spreadsheets.find((x) => x.id === chosen) ?? spreadsheets[0];
-  const syncUrl = `${env?.VITE_SUPABASE_URL ?? ''}/functions/v1/sheets`;
-
+function AppsScriptCard({ tabs }: { tabs: string[] }) {
+  const code = appsScriptFor([...new Set(tabs)]);
+  const [open, setOpen] = useState(false);
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Zap className="h-4 w-4 text-primary-text" aria-hidden /> Instant sync
-        </CardTitle>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Paste a small script into each spreadsheet once. Then, when someone marks a task <strong className="font-medium text-foreground">Completed</strong> (or changes the link or
-          notes), CrewBoard updates within seconds instead of at the next 10-minute sync. It also records the exact edit time.
-        </p>
+      <CardHeader className="flex-row items-start justify-between gap-4 space-y-0 pb-3">
+        <div>
+          <CardTitle>Optional: edit-time stamp</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">
+            When something changes in both the app and a sheet between syncs, the newer change wins. Paste this Apps Script into each spreadsheet so the sheet records exactly
+            when it was edited; without it, the sync time is used.
+          </p>
+        </div>
+        <Button variant="secondary" size="sm" className="shrink-0" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="apps-script">
+          {open ? 'Hide script' : 'Show script'}
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {spreadsheets.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Connect a sheet above first.</p>
-        ) : (
-          <>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              {spreadsheets.length > 1 && (
-                <Select value={selected?.id} onValueChange={(v) => { setChosen(v); setScript(null); }}>
-                  <SelectTrigger className="sm:w-72" aria-label="Spreadsheet">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {spreadsheets.map((x) => (
-                      <SelectItem key={x.id} value={x.id}>
-                        {x.label}
-                        {x.ready ? ' · script issued' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button
-                variant="secondary"
-                loading={issue.isPending}
-                onClick={() =>
-                  selected &&
-                  issue.mutate(selected.id, {
-                    onSuccess: (tokens) => setScript({ id: selected.id, code: appsScriptFor(syncUrl, tokens) }),
-                    onError: (e) => toast.error(friendlyError(e)),
-                  })
-                }
-              >
-                {selected?.ready ? 'Create a new script' : 'Create script'}
-              </Button>
-              {selected && spreadsheets.length === 1 && <span className="text-sm text-muted-foreground">for {selected.label}’s spreadsheet</span>}
-            </div>
-            {selected?.ready && !script && (
-              <p className="text-xs text-muted-foreground">A script was already created for this spreadsheet. Creating a new one stops the old one working, so replace it in the sheet too.</p>
-            )}
-            {script && script.id === selected?.id && (
-              <div className="space-y-3">
-                <ol className="list-decimal space-y-1 pl-5 text-sm">
-                  <li>
-                    Open the spreadsheet (
-                    <a href={sheetUrl(script.id)} target="_blank" rel="noopener noreferrer" className="text-primary-text underline-offset-2 hover:underline">
-                      open it
-                    </a>
-                    ) as its owner, then <strong className="font-medium">Extensions › Apps Script</strong>.
-                  </li>
-                  <li>Replace everything in the editor with the script below and press Save.</li>
-                  <li>
-                    Choose <code className="font-mono">installCrewBoard</code> next to Run, press <strong className="font-medium">Run</strong> and allow access. Done.
-                  </li>
-                </ol>
-                <pre className="max-h-72 overflow-auto rounded-lg bg-surface-2 p-4 font-mono text-xs leading-relaxed scrollbar-thin">{script.code}</pre>
-                <Button variant="secondary" size="sm" onClick={() => void copy(script.code, 'Script')}>
-                  <Copy /> Copy script
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
+      {open && (
+        <CardContent id="apps-script" className="space-y-3">
+          <pre className="max-h-72 overflow-auto rounded-lg bg-surface-2 p-4 font-mono text-xs leading-relaxed scrollbar-thin">{code}</pre>
+          <Button variant="secondary" size="sm" onClick={() => void copy(code, 'Script')}>
+            <Copy /> Copy script
+          </Button>
+        </CardContent>
+      )}
     </Card>
   );
 }

@@ -176,7 +176,6 @@ function SubmissionView({ submission: s, title }: { submission: Submissions['sub
       {s.links.map((l, i) => (
         <VideoEmbed key={`${s.id}-${l}`} url={l} title={`${title}, link ${i + 1}`} />
       ))}
-      {s.links.length === 0 && <p className="text-sm text-muted-foreground">Marked Completed in the sheet, without a link.</p>}
       {s.notes && (
         <blockquote className="border-l-2 border-primary/50 pl-3 text-sm text-muted-foreground">
           <span className="whitespace-pre-line">{s.notes}</span>

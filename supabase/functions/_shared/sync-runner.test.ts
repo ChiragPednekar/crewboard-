@@ -131,12 +131,12 @@ describe('syncSheet end to end (fakes)', () => {
   it('videographer submits from the sheet → app gets a submission, row reflects it, then settles', async () => {
     await run();
     const r = sheets.rowFor('a');
-    sheets.edit(r, COL.status, 'Completed');
+    sheets.edit(r, COL.status, 'Submitted');
     sheets.edit(r, COL.link, 'https://youtu.be/final');
     const s = await run();
     expect(s.actions).toBe(1);
     expect(db.tasks.get('a')).toMatchObject({ status: 'submitted', latestLinks: ['https://youtu.be/final'] });
-    expect(sheets.grid[r - 1]![COL.status]).toBe('Completed');
+    expect(sheets.grid[r - 1]![COL.status]).toBe('Submitted');
     expect(db.pending.has('a')).toBe(false);
     expect(await run()).toMatchObject({ actions: 0, rowsWritten: 0 });
   });
@@ -163,7 +163,7 @@ describe('syncSheet end to end (fakes)', () => {
   it('when the app rejects an action (e.g. month locked) the row is restored and the error is logged', async () => {
     await run();
     const r = sheets.rowFor('a');
-    sheets.edit(r, COL.status, 'Completed');
+    sheets.edit(r, COL.status, 'Submitted');
     sheets.edit(r, COL.link, 'https://youtu.be/x');
     db.failNext = 'The October 2026 assessment is locked';
     const s = await run();

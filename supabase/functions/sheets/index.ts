@@ -2,7 +2,6 @@
 //   POST { action: 'info' }                         admin → setup status + service-account email
 //   POST { action: 'provision', config_id }         admin → set up the tab, then sync it
 //   POST { action: 'sync', config_id? }             admin (JWT) or pg_cron (x-sync-secret header)
-//   POST { action: 'ping', token }                  Apps Script on a sheet edit → sync that tab now
 //
 // Env: GOOGLE_SERVICE_ACCOUNT_JSON, SYNC_CRON_SECRET, optional GOOGLE_SHEETS_API_BASE (testing).
 // All writes to tasks go through the same RPCs the app uses, with source = 'sheet'.
@@ -131,7 +130,7 @@ async function loadConfigs(db: SupabaseClient, configId?: string): Promise<Sheet
     .map((c) => ({ id: c.id, videographerId: c.videographer_id, spreadsheetId: c.spreadsheet_id, tabName: c.tab_name }));
 }
 
-async function runSync(opts: { trigger: 'cron' | 'manual' | 'sheet'; by: string | null; configId?: string; provision?: boolean }) {
+async function runSync(opts: { trigger: 'cron' | 'manual'; by: string | null; configId?: string; provision?: boolean }) {
   if (!SA) throw new HttpError(503, 'Google Sheets isn’t set up yet: GOOGLE_SERVICE_ACCOUNT_JSON is missing.');
   const db = serviceClient();
 
@@ -141,7 +140,6 @@ async function runSync(opts: { trigger: 'cron' | 'manual' | 'sheet'; by: string 
 
   const totals: ConfigStats & { sheets: number; failed: number } = { sheets: 0, failed: 0, rowsRead: 0, actions: 0, rowsWritten: 0, errors: 0, events: {} };
   const syncDb = new SupabaseSyncDb(db, runId as string);
-  let startedAt = new Date().toISOString();
   let status: 'ok' | 'partial' | 'error' = 'ok';
 
   try {
@@ -149,7 +147,7 @@ async function runSync(opts: { trigger: 'cron' | 'manual' | 'sheet'; by: string 
     const configs = await loadConfigs(db, opts.configId);
     if (opts.configId && configs.length === 0) throw new HttpError(404, 'That sheet connection is switched off or its videographer is deactivated.');
 
-    const syncOne = async (config: SheetConfig) => {
+    for (const config of configs) {
       totals.sheets += 1;
       try {
         if (opts.provision) {
@@ -177,17 +175,6 @@ async function runSync(opts: { trigger: 'cron' | 'manual' | 'sheet'; by: string 
         // last_synced_at only moves on success, so "synced 2 h ago" stays honest while failing
         await db.from('sheet_configs').update({ last_status: 'error', last_error: (e as Error).message.slice(0, 500) }).eq('id', config.id);
       }
-    };
-
-    for (const config of configs) await syncOne(config);
-
-    // Sheets edited while this run was busy asked for a sync (instant-sync pings): do them now
-    // rather than leaving them for the next 10-minute run.
-    for (let round = 0; round < 3; round++) {
-      const { data: asked } = await db.from('sheet_configs').select('id').eq('is_enabled', true).gt('sync_requested_at', startedAt);
-      if (!asked?.length) break;
-      startedAt = new Date().toISOString();
-      for (const config of await loadConfigs(db)) if (asked.some((a) => a.id === config.id)) await syncOne(config);
     }
     if (totals.sheets > 0 && totals.failed === totals.sheets) status = 'error';
   } catch (e) {
@@ -199,42 +186,12 @@ async function runSync(opts: { trigger: 'cron' | 'manual' | 'sheet'; by: string 
   return { runId, status, ...totals };
 }
 
-async function sha256Hex(text: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/** A sheet was edited: sync just that tab. Waits briefly if another run is busy (that run also picks the request up). */
-async function handlePing(token: unknown) {
-  if (typeof token !== 'string' || !/^[0-9a-f]{64}$/.test(token)) throw new HttpError(401, 'Bad sheet token');
-  const db = serviceClient();
-  const { data: config, error } = await db.from('sheet_configs').select('id, is_enabled').eq('ping_token_hash', await sha256Hex(token)).maybeSingle();
-  if (error) throw error;
-  if (!config) throw new HttpError(401, 'This script’s token was replaced. Copy the script again from CrewBoard › Settings › Google Sheets.');
-  if (!config.is_enabled) return { skipped: 'Sync is paused for this sheet.' };
-  const { data: settings } = await db.from('app_settings').select('sync_enabled').maybeSingle();
-  if (!settings?.sync_enabled) return { skipped: 'Automatic sync is switched off in Settings.' };
-
-  await db.from('sheet_configs').update({ sync_requested_at: new Date().toISOString() }).eq('id', config.id);
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const result = await runSync({ trigger: 'sheet', by: null, configId: config.id });
-    if (!('skipped' in result)) return result;
-    await sleep(3000);
-  }
-  return { queued: true };
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   try {
-    const body = ((await req.json().catch(() => ({}))) ?? {}) as { action?: string; config_id?: string; token?: unknown };
-
-    // Apps Script on a sheet: authorised by that tab's own token, can only sync that tab
-    if (body.action === 'ping') return json(await handlePing(body.token));
+    const body = ((await req.json().catch(() => ({}))) ?? {}) as { action?: string; config_id?: string };
     const secret = req.headers.get('x-sync-secret');
 
     // pg_cron: shared secret, sync only

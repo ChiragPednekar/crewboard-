@@ -3,7 +3,6 @@
 // One tab per videographer (own spreadsheet, or a tab in a master spreadsheet).
 // Row 1 is the header; each task has one row, matched by the Task ID in column A,
 // never by position. The videographer edits only Status, Deliverable link and Notes.
-// Setting Status to Completed is enough to hand work in; the link is optional.
 //
 // A run has two pure planning steps around the database calls:
 //   1. planSheetToApp: read rows → actions for the app (start, submit, notes) + events
@@ -32,7 +31,7 @@ export type TaskStatus = 'assigned' | 'in_progress' | 'submitted' | 'revision_re
 export const STATUS_LABEL: Record<TaskStatus, string> = {
   assigned: 'Assigned',
   in_progress: 'In Progress',
-  submitted: 'Completed',
+  submitted: 'Submitted',
   revision_requested: 'Revision Requested',
   approved: 'Approved',
   cancelled: 'Cancelled',
@@ -49,7 +48,6 @@ export function parseStatus(raw: string): TaskStatus | null {
     assigned: 'assigned', 'not started': 'assigned', todo: 'assigned', 'to do': 'assigned',
     'in progress': 'in_progress', started: 'in_progress', 'in prog': 'in_progress', wip: 'in_progress',
     submitted: 'submitted', done: 'submitted', delivered: 'submitted',
-    completed: 'submitted', complete: 'submitted', finished: 'submitted',
     'revision requested': 'revision_requested', revision: 'revision_requested',
     approved: 'approved', cancelled: 'cancelled', canceled: 'cancelled',
   };
@@ -246,15 +244,19 @@ export function planSheetToApp(input: {
       continue;
     }
 
-    // A new submission: status set to Completed, or a new link on submitted / revision work.
+    // A new submission: status set to Submitted, or a new link on submitted / revision work.
     const wantsSubmit =
       (statusChanged && wanted === 'submitted') ||
       (linkChanged && (wanted === 'submitted' || task.status === 'submitted' || task.status === 'revision_requested'));
 
     if (wantsSubmit) {
-      // no link at all is fine (marked Completed); text that isn't a link is a typo to fix
-      if (invalid.length > 0) {
-        plan.events.push({ kind: 'bad_link', taskId: id, rowNumber: row.rowNumber, detail: { invalid: invalid.slice(0, 5) } });
+      if (invalid.length > 0 || links.length === 0) {
+        plan.events.push({
+          kind: 'bad_link',
+          taskId: id,
+          rowNumber: row.rowNumber,
+          detail: links.length === 0 && invalid.length === 0 ? { reason: 'Submitted without a deliverable link' } : { invalid: invalid.slice(0, 5) },
+        });
         // keep what they typed so they can fix it; the status goes back to the app's
         plan.readStates.set(id, read);
         plan.keepSheetLink.add(id);
@@ -268,8 +270,7 @@ export function planSheetToApp(input: {
         plan.rewrite.add(id);
         continue;
       }
-      // re-marking finished work Completed, or re-saving the same links, isn't a new version
-      const sameAsLatest = task.status === 'submitted' && (links.length === 0 || normLinks(task.latestLinks) === linkText);
+      const sameAsLatest = normLinks(task.latestLinks) === linkText && task.status === 'submitted';
       if (!sameAsLatest) {
         plan.actions.push({ type: 'submit', taskId: id, links, notes: notes || null, submittedAt: sheetEditAt, rowNumber: row.rowNumber });
         plan.readStates.set(id, read);
@@ -296,7 +297,7 @@ export function planSheetToApp(input: {
 
     if (linkChanged && !wantsSubmit) {
       // a link typed on work that isn't being submitted yet: keep it in the sheet, nothing to do in the app
-      plan.events.push({ kind: 'updated', taskId: id, rowNumber: row.rowNumber, detail: { note: 'Link saved in the sheet; set Status to Completed to send it for review' } });
+      plan.events.push({ kind: 'updated', taskId: id, rowNumber: row.rowNumber, detail: { note: 'Link saved in the sheet; set Status to Submitted to send it for review' } });
       plan.keepSheetLink.add(id);
     }
 

@@ -126,20 +126,6 @@ export function useDeleteSheetConfig() {
   });
 }
 
-/** New instant-sync tokens for every tab of one spreadsheet (replaces any earlier script). */
-export function useIssuePingTokens() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    ...CALLER_HANDLES_ERRORS,
-    mutationFn: async (spreadsheetId: string) => {
-      const { data, error } = await supabase.rpc('issue_sheet_ping_tokens', { p_spreadsheet_id: spreadsheetId });
-      if (error) throw error;
-      return Object.fromEntries(data.map((t) => [t.tab_name, t.token])) as Record<string, string>;
-    },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: settingsKeys.sheets }),
-  });
-}
-
 export interface SyncResult {
   skipped?: string;
   status?: 'ok' | 'partial' | 'error';
