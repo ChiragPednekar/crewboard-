@@ -11,3 +11,4 @@ supabase/.branches
 # local secrets for the edge runtime / mock Google
 supabase/.env
 supabase/.mock-google-key.pem
+.vercel

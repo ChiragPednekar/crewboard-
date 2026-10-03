@@ -18,6 +18,18 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/**
+ * Supabase's default emails (used until custom SMTP + our templates are set up) link to
+ * `/#access_token=…&type=invite|recovery`. supabase-js signs the person in and clears the
+ * hash, so read the link type before it does: an invitee must still choose a password.
+ */
+function readEmailLink(): { type: string | null; error: string | null } {
+  if (typeof window === 'undefined') return { type: null, error: null };
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  return { type: hash.get('type'), error: hash.get('error_description') };
+}
+const emailLink = readEmailLink();
+
 export const profileQueryKey = (userId: string | undefined) => ['profile', userId] as const;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -28,6 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    if (emailLink.error) {
+      toast.error(`${emailLink.error.replace(/\+/g, ' ')}. Ask for a new link.`);
+      emailLink.error = null;
+    }
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
       setSession(data.session);
@@ -42,6 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (event === 'PASSWORD_RECOVERY') {
         navigate('/reset-password', { replace: true });
+      }
+      if (next && emailLink.type === 'invite' && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        emailLink.type = null;
+        navigate('/reset-password?mode=invite', { replace: true });
       }
     });
     return () => {
