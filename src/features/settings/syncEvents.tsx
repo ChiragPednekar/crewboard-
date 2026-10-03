@@ -13,7 +13,7 @@ type Tone = 'ok' | 'warn' | 'bad' | 'muted';
 export function describeSyncEvent(kind: string, d: Detail): { icon: LucideIcon; tone: Tone; text: string } {
   switch (kind) {
     case 'submission_created':
-      return { icon: ArrowDownToLine, tone: 'ok', text: 'Submission received from the sheet' };
+      return { icon: ArrowDownToLine, tone: 'ok', text: d.links === 0 ? 'Marked Completed in the sheet (no link)' : 'Marked Completed in the sheet, with a link' };
     case 'updated':
       return d.status
         ? { icon: ArrowDownToLine, tone: 'ok', text: `Status set to ${d.status === 'in_progress' ? 'In Progress' : 'Assigned'} from the sheet` }

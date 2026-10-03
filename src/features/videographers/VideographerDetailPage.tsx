@@ -459,6 +459,7 @@ function SubmissionsTab({ id, firstName }: { id: string; firstName: string }) {
               {s.links.map((l) => (
                 <LinkPreviewCard key={l} url={l} />
               ))}
+              {s.links.length === 0 && <p className="text-sm text-muted-foreground">Marked Completed in the sheet, without a link.</p>}
             </div>
           </Card>
         </li>

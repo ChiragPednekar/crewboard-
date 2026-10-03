@@ -131,6 +131,7 @@ export default function CrewTaskPage() {
                           {s.links.map((l) => (
                             <LinkPreviewCard key={l} url={l} />
                           ))}
+                          {s.links.length === 0 && <p className="text-sm text-muted-foreground">You marked this Completed in your sheet, without a link.</p>}
                         </div>
                         {s.thumbnail_path && <Thumb path={s.thumbnail_path} />}
                         {s.notes && <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">“{s.notes}”</p>}

@@ -4,10 +4,10 @@ CrewBoard can mirror each videographer's tasks into a Google Sheet and read thei
 
 - **App → Sheet:** every task in a *published* plan gets a row: brief, references, due date, status, feedback and points.
 - **Sheet → App:** the videographer edits only **Status**, **Deliverable link** and **Notes**. Everything else is protected.
-  - Setting Status to *Submitted* with a link creates a real submission and notifies you.
+  - Setting Status to *Completed* (or *Done* / *Finished*) hands the work in and notifies you. A link is optional: add one and you can watch it in the review screen.
   - *In Progress* starts the task.
   - Notes are copied across.
-- **When:** every 10 minutes, plus **Sync now** in *Settings › Google Sheets*.
+- **When:** within seconds of an edit once *Instant sync* is set up (section 5), otherwise every 10 minutes. **Sync now** in *Settings › Google Sheets* works any time.
 
 You need about 15 minutes, a Google account, and access to the Supabase project.
 
@@ -86,22 +86,29 @@ It then writes all their published tasks. Later tasks are added at the bottom as
 
 Use **⋯ › Repair header & protection** if someone breaks the layout.
 
-## 5. Optional: exact edit times (Apps Script)
+## 5. Instant sync (Apps Script, once per spreadsheet)
 
-**Why it matters:** if a task changes in the app *and* in the sheet between two syncs, the newer change wins. Google's API doesn't say when a cell was edited, so without help, a sheet edit counts as happening when the sync notices it.
+Without this, a sheet edit reaches CrewBoard at the next 10-minute run. With it, CrewBoard hears about the edit straight away and syncs that tab within seconds. It also records the exact edit time, so conflicts are decided fairly.
 
-To record the real edit time, paste the script from **Settings › Google Sheets › Optional: edit-time stamp** into each spreadsheet:
-1. Go to **Extensions › Apps Script**, paste the script and save.
-2. Nothing else is needed. It's a simple `onEdit` trigger, so it runs for whoever edits.
+1. In **Settings › Google Sheets › Instant sync**, pick the spreadsheet and click **Create script**.
+2. Open that spreadsheet **as its owner** and go to **Extensions › Apps Script**.
+3. Replace everything in the editor with the script and press **Save**.
+4. Choose `installCrewBoard` next to **Run**, press **Run** and allow access. A "CrewBoard instant sync is on" message appears in the sheet.
 
-It writes the time into the hidden column O whenever Status, Deliverable link or Notes change. Column O stays editable so the script can write to it while running as the videographer. Tampering with it can only affect which side wins a conflict, and future times are capped at "now".
+Notes:
+- **Who it runs as:** it's an *installable* trigger, because calling CrewBoard needs permission. It runs as the person who installed it, for everyone's edits.
+- **Pausing:** it respects the **Sync automatically** switch and each sheet's *Pause sync*.
+- **Tokens:** each tab has its own token, and CrewBoard stores only its SHA-256 hash. A token can only ask for that one tab to be synced. Anyone who can edit the spreadsheet can read the script, so that's all a leaked token allows.
+- **Replacing a script:** **Create a new script** replaces the tokens, and the old script stops working. Paste the new one in its place.
+- **Edits made by CrewBoard itself** (through the API) don't fire the trigger, so there's no loop.
+- **Local development:** Apps Script can't reach `localhost`, so test instant sync against a hosted project. The mock below stamps edit times itself.
 
 ## How conflicts and mistakes are handled
 
 | What happens in the sheet | Result | Shown in *Sync health* as |
 |---|---|---|
-| Status → *Submitted* with a valid link | New submission (a new version if they'd already submitted) | Submission received |
-| Status → *Submitted* without a link, or with text that isn't a link | Ignored; status goes back; their typed text is kept so they can fix it | Bad link |
+| Status → *Completed* (with or without a link) | Handed in for review (a new version if it was sent back for changes) | Marked Completed |
+| Status → *Completed* with text in the link cell that isn't a link | Ignored; status goes back; their typed text is kept so they can fix it | Bad link |
 | Status → *Approved* / *Revision Requested* / *Cancelled*, or an unknown word | Reverted; only you can set these | Invalid status |
 | Any edit to an *Approved* or *Cancelled* task | Reverted | Edited a closed task |
 | Changed in both app and sheet since the last sync | Newer change wins; the other side is overwritten | Conflict (who won) |
