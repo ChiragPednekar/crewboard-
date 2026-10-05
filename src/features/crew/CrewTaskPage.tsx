@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Ban, CheckCircle2, FileQuestion, FileSpreadsheet, Hourglass, Mail, MapPin, Phone, Play, RotateCcw, Send, Star, StickyNote, UserRound } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Ban, Camera, CheckCircle2, FileQuestion, FileSpreadsheet, Hourglass, Mail, MapPin, Phone, Play, RotateCcw, Send, Star, StickyNote, UserRound } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
 
@@ -14,10 +14,13 @@ import { BackLink, DetailRow } from '@/components/Toolbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { type PlayerHandle, VideoPlayer } from '@/components/VideoPlayer';
+import { CommentsPanel } from '@/features/comments/CommentsPanel';
 import { useTaskSubmissions } from '@/features/tasks/api';
 import { ReferencesCard } from '@/features/tasks/ReferencesCard';
 import { dueLabel, formatDate, formatDateTime, isOverdue, toMonthKey } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
+import { isTrackableVideo } from '@/lib/links';
 import { cn } from '@/lib/utils';
 
 import { type CrewTaskDetail, useMyTask, useStartTask, useThumbnailUrl } from './api';
@@ -28,6 +31,7 @@ export default function CrewTaskPage() {
   const task = useMyTask(id);
   const history = useTaskSubmissions(id);
   const [submitting, setSubmitting] = useState(false);
+  const player = useRef<PlayerHandle>(null);
 
   if (task.isPending) {
     return (
@@ -75,6 +79,11 @@ export default function CrewTaskPage() {
               {['submitted', 'approved', 'cancelled'].includes(t.status) ? `Due ${formatDate(t.due_date, 'EEE d MMM')}` : dueLabel(t.due_date)}
             </span>
             <span className="tabular">· {t.max_points} pts</span>
+            {t.shoot_date && (
+              <span className="inline-flex items-center gap-1 text-violet-text">
+                · <Camera className="h-3.5 w-3.5" aria-hidden /> Shoot {formatDate(t.shoot_date, 'EEE d MMM')}
+              </span>
+            )}
           </span>
         }
       />
@@ -82,6 +91,26 @@ export default function CrewTaskPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="min-w-0 space-y-6">
           <NextStep task={t} feedback={latestReview} submissionsCount={subs.length} onSubmit={() => setSubmitting(true)} />
+
+          {subs[0]?.links[0] && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle>Latest cut · v{subs[0].version}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <VideoPlayer ref={player} url={subs[0].links[0]} title={`${t.title}, latest version`} />
+              </CardContent>
+            </Card>
+          )}
+          {subs.length > 0 && (
+            <CommentsPanel
+              taskId={t.id}
+              submissionId={subs[0]?.id ?? null}
+              player={player}
+              trackable={isTrackableVideo(subs[0]?.links[0])}
+              canWrite={t.status !== 'cancelled'}
+            />
+          )}
 
           <Card>
             <CardHeader className="pb-3">

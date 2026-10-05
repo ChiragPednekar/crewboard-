@@ -24,3 +24,16 @@ describe('canOpen (post-login redirect target)', () => {
     expect(canOpen('admin', '/notifications')).toBe(true);
   });
 });
+
+describe('canOpen for reviewers', () => {
+  it('lets reviewers into the review queue, tasks and calendar only', () => {
+    expect(canOpen('reviewer', '/admin/review')).toBe(true);
+    expect(canOpen('reviewer', '/admin/review/abc')).toBe(true);
+    expect(canOpen('reviewer', '/admin/tasks/abc')).toBe(true);
+    expect(canOpen('reviewer', '/admin/calendar?month=2026-10')).toBe(true);
+    expect(canOpen('reviewer', '/admin/assessments')).toBe(false);
+    expect(canOpen('reviewer', '/admin/settings')).toBe(false);
+    expect(canOpen('reviewer', '/admin/reviewers')).toBe(false);
+    expect(canOpen('reviewer', '/me')).toBe(false);
+  });
+});

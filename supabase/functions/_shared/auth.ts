@@ -8,7 +8,7 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 export interface Caller {
   id: string;
-  role: 'admin' | 'videographer';
+  role: 'admin' | 'reviewer' | 'videographer';
   /** Acts as the caller, so RLS, triggers and the activity log see the real user. */
   db: SupabaseClient;
 }

@@ -1,20 +1,5 @@
 import { useRef, useState } from 'react';
-import {
-  Archive,
-  ArchiveRestore,
-  Building,
-  ClipboardList,
-  Ellipsis,
-  ImageUp,
-  Mail,
-  MapPin,
-  Pencil,
-  Phone,
-  StickyNote,
-  Trash2,
-  UserRound,
-  Users,
-} from 'lucide-react';
+import { Archive, ArchiveRestore, Building, ClipboardList, Ellipsis, FileDown, ImageUp, Mail, MapPin, Pencil, Phone, StickyNote, Trash2, UserRound, Users } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 
@@ -39,6 +24,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useMonthParam } from '@/hooks/useSearchParamState';
+import { downloadBlob, safeFileName } from '@/lib/export';
 import { formatDate, formatMonth, isOverdue } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
 
@@ -249,7 +235,10 @@ export default function ClientDetailPage() {
             <CardTitle className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-primary-text" aria-hidden /> Work for {formatMonth(month, 'MMMM')}
             </CardTitle>
-            <MonthPicker value={month} onChange={setMonth} />
+            <div className="flex flex-wrap items-center gap-2">
+              <ClientReportButton clientId={c.id} clientName={c.name} month={month} />
+              <MonthPicker value={month} onChange={setMonth} />
+            </div>
           </CardHeader>
           <CardContent>
             {work.isPending ? (
@@ -333,5 +322,30 @@ export default function ClientDetailPage() {
         }
       />
     </>
+  );
+}
+
+function ClientReportButton({ clientId, clientName, month }: { clientId: string; clientName: string; month: string }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      loading={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          const { renderClientReportPdf } = await import('./ClientReportPdf');
+          const blob = await renderClientReportPdf(clientId, clientName, month);
+          downloadBlob(blob, `${safeFileName(clientName)}-${month}-report.pdf`);
+        } catch (e) {
+          toast.error(friendlyError(e));
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      {!busy && <FileDown />} Monthly report
+    </Button>
   );
 }

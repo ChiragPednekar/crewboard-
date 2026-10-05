@@ -129,3 +129,9 @@ export function asLinkMeta(value: unknown): LinkMeta {
   const s = (k: string) => (typeof v[k] === 'string' && v[k] ? (v[k] as string) : undefined);
   return { title: s('title'), description: s('description'), thumbnail: s('thumbnail'), site_name: s('site_name'), author: s('author') };
 }
+
+/** Players that report their playback time (used for timestamped notes). */
+export function isTrackableVideo(url: string | undefined): boolean {
+  const p = url ? parseLink(url) : null;
+  return Boolean(p?.id && (p.provider === 'youtube' || p.provider === 'vimeo'));
+}

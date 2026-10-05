@@ -23,6 +23,7 @@ export function taskFormSchema({ month, creating }: { month: string; creating: b
       client_id: z.string().min(1, 'Pick a client'),
       category_id: z.string().min(1, 'Pick a category'),
       due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick a due date'),
+      shoot_date: z.string().refine((v) => v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v), 'Pick a valid date'),
       priority: z.enum(PRIORITIES),
       max_points: z
         .number({ invalid_type_error: 'Enter the points this task is worth' })
@@ -36,6 +37,13 @@ export function taskFormSchema({ month, creating }: { month: string; creating: b
     .superRefine((v, ctx) => {
       if (v.due_date && !isInMonth(v.due_date, month)) {
         ctx.addIssue({ code: 'custom', path: ['due_date'], message: `The due date must be in ${formatMonth(month)}` });
+      }
+      if (v.shoot_date) {
+        const m = Date.parse(`${month}-01`);
+        const d = Date.parse(v.shoot_date);
+        if (d < m - 62 * 86_400_000 || d > m + 92 * 86_400_000) {
+          ctx.addIssue({ code: 'custom', path: ['shoot_date'], message: `Pick a shoot date close to ${formatMonth(month)}` });
+        }
       }
       if (creating && v.assignees.length === 0) {
         ctx.addIssue({ code: 'custom', path: ['assignees'], message: 'Pick at least one videographer' });

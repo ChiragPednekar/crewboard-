@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, FileQuestion, FileSpreadsheet, Hourglass, RotateCcw, Send } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -17,10 +17,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { UserAvatar } from '@/components/UserAvatar';
 import { VideoEmbed } from '@/components/VideoEmbed';
+import { type PlayerHandle, VideoPlayer } from '@/components/VideoPlayer';
+import { CommentsPanel } from '@/features/comments/CommentsPanel';
+import { ClientApprovalCard } from '@/features/client-review/ClientApprovalCard';
 import { type TaskDetail, useTask, useTaskSubmissions, useThumbnailUrl } from '@/features/tasks/api';
 import { ReferencesCard } from '@/features/tasks/ReferencesCard';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
+import { isTrackableVideo } from '@/lib/links';
+import { WhatsAppButton } from '@/features/whatsapp/WhatsAppButton';
 import { cn } from '@/lib/utils';
 
 import { useReviewQueue, useReviewTask } from './api';
@@ -32,6 +37,7 @@ export default function ReviewPage() {
   const task = useTask(taskId);
   const history = useTaskSubmissions(taskId);
   const [version, setVersion] = useState<number | null>(null);
+  const player = useRef<PlayerHandle>(null);
 
   useEffect(() => setVersion(null), [taskId]);
 
@@ -86,6 +92,7 @@ export default function ReviewPage() {
             <Link to={`/admin/tasks/${t.id}`} className="underline-offset-2 hover:text-primary-text hover:underline">
               · task details
             </Link>
+            {t.videographer && <WhatsAppButton profileId={t.videographer.id} text={`Hi ${t.videographer.full_name.split(' ')[0]}, about “${t.title}”: `} compact />}
           </span>
         }
       />
@@ -108,10 +115,20 @@ export default function ReviewPage() {
               {!shown ? (
                 <p className="text-sm text-muted-foreground">Nothing has been submitted for this task yet.</p>
               ) : (
-                <SubmissionView submission={shown} title={t.title} />
+                <SubmissionView submission={shown} title={t.title} player={player} />
               )}
             </CardContent>
           </Card>
+
+          {shown && (
+            <CommentsPanel
+              taskId={t.id}
+              submissionId={shown.id}
+              player={player}
+              trackable={isTrackableVideo(shown.links[0])}
+              canWrite={t.status !== 'cancelled'}
+            />
+          )}
 
           <Card>
             <CardHeader className="pb-3">
@@ -126,6 +143,7 @@ export default function ReviewPage() {
 
         <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           <ReviewPanel task={t} submissions={submissions} />
+          {shown && <ClientApprovalCard taskId={t.id} submissionId={shown.id} taskTitle={t.title} />}
           {reviews.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
@@ -158,7 +176,15 @@ export default function ReviewPage() {
   );
 }
 
-function SubmissionView({ submission: s, title }: { submission: Submissions['submissions'][number]; title: string }) {
+function SubmissionView({
+  submission: s,
+  title,
+  player,
+}: {
+  submission: Submissions['submissions'][number];
+  title: string;
+  player: RefObject<PlayerHandle>;
+}) {
   const thumb = useThumbnailUrl(s.thumbnail_path);
   return (
     <div className="space-y-4">
@@ -173,9 +199,13 @@ function SubmissionView({ submission: s, title }: { submission: Submissions['sub
           </span>
         )}
       </p>
-      {s.links.map((l, i) => (
-        <VideoEmbed key={`${s.id}-${l}`} url={l} title={`${title}, link ${i + 1}`} />
-      ))}
+      {s.links.map((l, i) =>
+        i === 0 ? (
+          <VideoPlayer key={`${s.id}-${l}`} ref={player} url={l} title={`${title}, link 1`} />
+        ) : (
+          <VideoEmbed key={`${s.id}-${l}`} url={l} title={`${title}, link ${i + 1}`} />
+        ),
+      )}
       {s.links.length === 0 && <p className="text-sm text-muted-foreground">Marked Completed in the sheet, without a link.</p>}
       {s.notes && (
         <blockquote className="border-l-2 border-primary/50 pl-3 text-sm text-muted-foreground">

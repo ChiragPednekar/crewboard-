@@ -1,6 +1,6 @@
 // admin-users: crew account management that needs the Auth admin API.
 //
-//   POST { action: 'invite', full_name, email, phone?, base_location?, client_ids? }
+//   POST { action: 'invite', full_name, email, phone?, base_location?, client_ids? }   (also allow-lists the email)
 //   POST { action: 'resend_invite', user_id }
 //   POST { action: 'update_email', user_id, email }
 //   POST { action: 'set_active', user_id, active }
@@ -68,6 +68,13 @@ Deno.serve(async (req) => {
         const baseLocation = str(body.base_location, 'Base location', { max: 120 });
         const clientIds = Array.isArray(body.client_ids) ? body.client_ids.filter((c) => typeof c === 'string' && UUID_RE.test(c)) : [];
 
+        // The sign-up gate (hook_before_user_created) only lets allow-listed emails in,
+        // so list the address first. Clients are assigned below as before.
+        const { error: allowError } = await admin
+          .from('allowed_emails')
+          .upsert({ email: address, full_name: fullName, phone, base_location: baseLocation, added_by: caller.id }, { onConflict: 'email' });
+        if (allowError) throw allowError;
+
         // Role is not passed: handle_new_user defaults to videographer, and only the
         // service role could set app_metadata.role anyway.
         const { data, error } = await admin.auth.admin.inviteUserByEmail(address, {
@@ -103,6 +110,7 @@ Deno.serve(async (req) => {
       case 'update_email': {
         const id = userId(body.user_id);
         const address = email(body.email);
+        await admin.from('allowed_emails').upsert({ email: address, added_by: caller.id, claimed_at: new Date().toISOString(), claimed_by: id }, { onConflict: 'email' });
         const { error } = await admin.auth.admin.updateUserById(id, { email: address, email_confirm: true });
         if (error) throw new HttpError(error.status === 422 ? 409 : 400, authMessage(error.message));
         return json({ ok: true });

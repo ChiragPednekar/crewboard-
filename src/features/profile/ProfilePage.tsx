@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { UserAvatar } from '@/components/UserAvatar';
 import { profileQueryKey, useProfile } from '@/features/auth/AuthProvider';
+import { NotificationsCard } from './NotificationsCard';
 import { newPasswordSchema, type NewPasswordValues } from '@/features/auth/schemas';
 import { friendlyError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
@@ -127,6 +128,8 @@ export default function ProfilePage() {
               </Form>
             </CardContent>
           </Card>
+
+          <NotificationsCard />
 
           <Card>
             <CardHeader>

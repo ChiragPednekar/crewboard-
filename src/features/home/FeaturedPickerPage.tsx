@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, ExternalLink, Medal, Plus, Sparkles, Star, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ExternalLink, Heart, Medal, Plus, Sparkles, Star, X } from 'lucide-react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 
@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { UserAvatar } from '@/components/UserAvatar';
 import { type FeaturePick, useFeatureCandidates, useFeaturedWork, useSetFeaturedWork } from '@/features/leaderboard/api';
 import { useMonthParam } from '@/hooks/useSearchParamState';
+import { useVoteCandidates } from '@/features/motivation/api';
 import { formatMonth } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
 import { cn } from '@/lib/utils';
@@ -76,6 +77,7 @@ export default function FeaturedPickerPage() {
           </>
         }
       />
+      <CrewVotesHint month={month} />
 
       {candidates.isError ? (
         <ErrorState error={candidates.error} onRetry={() => void candidates.refetch()} />
@@ -233,5 +235,27 @@ function CandidateRow({ c, picked, full, onAdd }: { c: Candidate; picked: boolea
         </div>
       </div>
     </li>
+  );
+}
+
+/** The crew's own votes, as a steer for the admin's pick. */
+function CrewVotesHint({ month }: { month: string }) {
+  const votes = useVoteCandidates(month);
+  const top = (votes.data ?? []).filter((c) => c.votes > 0).sort((a, b) => b.votes - a.votes).slice(0, 5);
+  if (top.length === 0) return null;
+  return (
+    <div className="mb-6 rounded-xl border border-border bg-surface p-4">
+      <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+        <Heart className="h-4 w-4 text-danger-text" aria-hidden /> Crew’s choice so far
+      </p>
+      <ol className="flex flex-wrap gap-2">
+        {top.map((c, i) => (
+          <li key={c.task_id} className="rounded-full bg-surface-2 px-3 py-1 text-sm">
+            <span className="text-muted-foreground">#{i + 1}</span> {c.title} · {c.videographer_name.split(' ')[0]}{' '}
+            <span className="tabular font-semibold text-danger-text">{c.votes}♥</span>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }

@@ -145,7 +145,16 @@ export default function LoginPage() {
       </Form>
 
       <p className="mt-8 text-center text-xs text-muted-foreground">
-        New here? Continue with Google and you’ll join the crew automatically.
+        New to the crew? Ask your studio admin to add your email, then continue with Google.
+        <span className="mt-2 block">
+          <Link to="/privacy" className="hover:text-foreground hover:underline">
+            Privacy
+          </Link>
+          {' · '}
+          <Link to="/terms" className="hover:text-foreground hover:underline">
+            Terms
+          </Link>
+        </span>
       </p>
     </div>
   );

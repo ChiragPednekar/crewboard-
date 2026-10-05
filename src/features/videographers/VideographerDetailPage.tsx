@@ -70,6 +70,9 @@ import {
   useVideographerSubmissions,
   type Videographer,
 } from './api';
+import { BadgesCard } from '@/features/motivation/components';
+import { WhatsAppButton } from '@/features/whatsapp/WhatsAppButton';
+import { RoleMenuItem } from './RoleMenuItem';
 import { EditDetailsDialog, ManageClientsDialog } from './dialogs';
 
 const TABS = ['overview', 'plan', 'submissions', 'assessments', 'sheet'] as const;
@@ -132,6 +135,7 @@ export default function VideographerDetailPage() {
         }
         actions={
           <>
+            <WhatsAppButton profileId={p.id} text={`Hi ${firstName}, `} />
             {p.is_active && (
               <Button asChild>
                 <Link to={`/admin/plans?month=${month}&vid=${p.id}`}>
@@ -164,6 +168,7 @@ export default function VideographerDetailPage() {
                     <MailPlus /> Resend invite
                   </DropdownMenuItem>
                 )}
+                <RoleMenuItem person={p} />
                 <DropdownMenuSeparator />
                 {p.is_active ? (
                   <DropdownMenuItem onSelect={() => setDialog('deactivate')} className="text-danger-text focus:text-danger-text">
@@ -213,6 +218,9 @@ export default function VideographerDetailPage() {
 
         <TabsContent value="overview">
           <OverviewTab person={p} lastSignIn={info?.lastSignInAt ?? null} month={month} onManageClients={() => setDialog('clients')} />
+          <div className="mt-6">
+            <BadgesCard videographerId={p.id} />
+          </div>
         </TabsContent>
         <TabsContent value="plan">
           <PlanTab person={p} month={month} onMonthChange={setMonth} />

@@ -136,6 +136,12 @@ export function useCreateTasks() {
         p_refs: refPayload(values.refs),
       });
       if (error) throw error;
+      // create_tasks predates shoot dates: set it on the new rows afterwards
+      const ids = ((data ?? []) as { id: string }[]).map((t) => t.id);
+      if (values.shoot_date && ids.length > 0) {
+        const { error: shootError } = await supabase.from('tasks').update({ shoot_date: values.shoot_date }).in('id', ids);
+        if (shootError) throw shootError;
+      }
       return data;
     },
     onSuccess: () => void invalidateWork(queryClient),
@@ -150,7 +156,7 @@ export function useUpdateTask() {
       const p = taskPayload(values);
       const { error } = await supabase
         .from('tasks')
-        .update({ ...p, brief: p.brief || null })
+        .update({ ...p, brief: p.brief || null, shoot_date: values.shoot_date || null })
         .eq('id', id);
       if (error) throw error;
     },

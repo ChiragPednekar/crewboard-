@@ -19,7 +19,7 @@ import type { Profile } from '@/lib/supabase';
 import { useInviteVideographer, useSetVideographerClients, useUpdateVideographer } from './api';
 import { emptyInvite, inviteSchema, type InviteValues, videographerDetailsSchema, type VideographerDetailsValues } from './schemas';
 
-function useClientCheckOptions(keep: string[] = []): CheckListOption[] {
+export function useClientCheckOptions(keep: string[] = []): CheckListOption[] {
   const clients = useClientOptions();
   return (clients.data ?? [])
     .filter((c) => c.is_active || keep.includes(c.id))

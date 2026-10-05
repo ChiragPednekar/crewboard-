@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronsLeft, ChevronsRight, LogOut, Menu, UserRound } from 'lucide-react';
+import { Camera, ChevronsLeft, ChevronsRight, LogOut, Menu, Palmtree, UserRound } from 'lucide-react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 
 import { Logo } from '@/components/Logo';
@@ -242,14 +242,14 @@ function SidebarLink({ item, collapsed, count }: { item: NavItem; collapsed: boo
 }
 
 function BottomTabs({ groups, unread }: { groups: NavGroup[]; unread: number }) {
-  const items = groups.flatMap((g) => g.items);
+  const items = groups.flatMap((g) => g.items).filter((i) => !i.desktopOnly);
   const { pathname } = useLocation();
   return (
     <nav
       aria-label="Main navigation"
       className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md lg:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-4">
+      <ul className="mx-auto grid max-w-lg grid-cols-5">
         {items.map((item) => {
           const Icon = item.icon;
           const count = item.badge === 'unread' ? unread : 0;
@@ -319,9 +319,23 @@ function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/profile">
-            <UserRound /> Profile & password
+            <UserRound /> Profile & notifications
           </Link>
         </DropdownMenuItem>
+        {profile.role === 'videographer' && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link to="/me/leave">
+                <Palmtree /> Leave & availability
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/me/gear">
+                <Camera /> My gear
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void signOut()}>
           <LogOut /> Sign out

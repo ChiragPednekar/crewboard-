@@ -14,6 +14,7 @@ describe('task form', () => {
     client_id: 'c',
     category_id: 'k',
     due_date: '2026-10-20',
+    shoot_date: '',
     priority: 'normal' as const,
     max_points: 25,
     brief: '',
@@ -25,6 +26,13 @@ describe('task form', () => {
     expect(taskFormSchema({ month: '2026-10', creating: true }).safeParse(base).success).toBe(true);
   });
 
+  it('accepts an optional shoot date near the month, rejects far-off ones', () => {
+    const schema = taskFormSchema({ month: '2026-10', creating: true });
+    expect(schema.safeParse({ ...base, shoot_date: '2026-10-05' }).success).toBe(true);
+    expect(schema.safeParse({ ...base, shoot_date: '2026-09-28' }).success).toBe(true);
+    const far = schema.safeParse({ ...base, shoot_date: '2027-06-01' });
+    expect(far.success).toBe(false);
+  });
   it('keeps the due date inside the plan month', () => {
     const r = taskFormSchema({ month: '2026-10', creating: true }).safeParse({ ...base, due_date: '2026-11-01' });
     expect(messages(r).due_date).toBe('The due date must be in October 2026');

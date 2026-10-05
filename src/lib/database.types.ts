@@ -88,6 +88,75 @@ export type Database = {
           },
         ]
       }
+      admin_emails: {
+        Row: {
+          added_at: string
+          email: string
+        }
+        Insert: {
+          added_at?: string
+          email: string
+        }
+        Update: {
+          added_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
+      allowed_emails: {
+        Row: {
+          added_by: string | null
+          base_location: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          client_ids: string[]
+          created_at: string
+          email: string
+          full_name: string | null
+          phone: string | null
+          role: string
+        }
+        Insert: {
+          added_by?: string | null
+          base_location?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          client_ids?: string[]
+          created_at?: string
+          email: string
+          full_name?: string | null
+          phone?: string | null
+          role?: string
+        }
+        Update: {
+          added_by?: string | null
+          base_location?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          client_ids?: string[]
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          phone?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "allowed_emails_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "allowed_emails_claimed_by_fkey"
+            columns: ["claimed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           id: boolean
@@ -174,6 +243,115 @@ export type Database = {
           },
         ]
       }
+      best_work_votes: {
+        Row: {
+          created_at: string
+          month: string
+          task_id: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          month: string
+          task_id: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          month?: string
+          task_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "best_work_votes_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "best_work_votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_review_links: {
+        Row: {
+          client_contact: string | null
+          comment: string | null
+          created_at: string
+          created_by: string | null
+          decision: string | null
+          expires_at: string
+          id: string
+          rating: number | null
+          responded_at: string | null
+          responder_name: string | null
+          revoked_at: string | null
+          submission_id: string | null
+          task_id: string
+          token: string
+        }
+        Insert: {
+          client_contact?: string | null
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          decision?: string | null
+          expires_at?: string
+          id?: string
+          rating?: number | null
+          responded_at?: string | null
+          responder_name?: string | null
+          revoked_at?: string | null
+          submission_id?: string | null
+          task_id: string
+          token?: string
+        }
+        Update: {
+          client_contact?: string | null
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          decision?: string | null
+          expires_at?: string
+          id?: string
+          rating?: number | null
+          responded_at?: string | null
+          responder_name?: string | null
+          revoked_at?: string | null
+          submission_id?: string | null
+          task_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_review_links_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_review_links_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_review_links_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -222,6 +400,108 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment: {
+        Row: {
+          category: string
+          checked_out_at: string | null
+          created_at: string
+          due_back: string | null
+          holder_id: string | null
+          id: string
+          name: string
+          notes: string | null
+          serial_no: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          checked_out_at?: string | null
+          created_at?: string
+          due_back?: string | null
+          holder_id?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          serial_no?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          checked_out_at?: string | null
+          created_at?: string
+          due_back?: string | null
+          holder_id?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          serial_no?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          equipment_id: string
+          id: number
+          note: string | null
+          videographer_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          equipment_id: string
+          id?: never
+          note?: string | null
+          videographer_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          equipment_id?: string
+          id?: never
+          note?: string | null
+          videographer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_log_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_log_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_log_videographer_id_fkey"
+            columns: ["videographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_work: {
         Row: {
           chosen_by: string | null
@@ -266,6 +546,66 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          kind: string
+          reason: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          videographer_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          kind?: string
+          reason?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          videographer_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          kind?: string
+          reason?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          videographer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_videographer_id_fkey"
+            columns: ["videographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -435,30 +775,36 @@ export type Database = {
           created_at: string
           id: string
           link: string | null
+          push_sent_at: string | null
           read_at: string | null
           title: string
           type: string
           user_id: string
+          whatsapp_status: string | null
         }
         Insert: {
           body?: string | null
           created_at?: string
           id?: string
           link?: string | null
+          push_sent_at?: string | null
           read_at?: string | null
           title: string
           type: string
           user_id: string
+          whatsapp_status?: string | null
         }
         Update: {
           body?: string | null
           created_at?: string
           id?: string
           link?: string | null
+          push_sent_at?: string | null
           read_at?: string | null
           title?: string
           type?: string
           user_id?: string
+          whatsapp_status?: string | null
         }
         Relationships: [
           {
@@ -483,6 +829,8 @@ export type Database = {
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
+          whatsapp_number: string | null
+          whatsapp_opt_in: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -496,6 +844,8 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          whatsapp_number?: string | null
+          whatsapp_opt_in?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -509,8 +859,122 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          whatsapp_number?: string | null
+          whatsapp_opt_in?: boolean
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_comments: {
+        Row: {
+          at_seconds: number | null
+          author_id: string | null
+          author_name: string | null
+          author_staff: boolean
+          body: string
+          created_at: string
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          submission_id: string | null
+          task_id: string
+        }
+        Insert: {
+          at_seconds?: number | null
+          author_id?: string | null
+          author_name?: string | null
+          author_staff?: boolean
+          body: string
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          submission_id?: string | null
+          task_id: string
+        }
+        Update: {
+          at_seconds?: number | null
+          author_id?: string | null
+          author_name?: string | null
+          author_staff?: boolean
+          body?: string
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          submission_id?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_comments_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_comments_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sheet_configs: {
         Row: {
@@ -980,6 +1444,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           quality_rating: number | null
           sheet_row_ref: string | null
+          shoot_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           status_changed_at: string
           status_changed_via: Database["public"]["Enums"]["submission_source"]
@@ -1006,6 +1471,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["task_priority"]
           quality_rating?: number | null
           sheet_row_ref?: string | null
+          shoot_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           status_changed_at?: string
           status_changed_via?: Database["public"]["Enums"]["submission_source"]
@@ -1032,6 +1498,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["task_priority"]
           quality_rating?: number | null
           sheet_row_ref?: string | null
+          shoot_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           status_changed_at?: string
           status_changed_via?: Database["public"]["Enums"]["submission_source"]
@@ -1160,6 +1627,29 @@ export type Database = {
         }[]
       }
       can_see_task: { Args: { p_task_id: string }; Returns: boolean }
+      cancel_leave: {
+        Args: { p_id: string }
+        Returns: {
+          created_at: string
+          end_date: string
+          id: string
+          kind: string
+          reason: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          videographer_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "leave_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_task: {
         Args: { p_reason?: string; p_task_id: string }
         Returns: {
@@ -1180,6 +1670,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           quality_rating: number | null
           sheet_row_ref: string | null
+          shoot_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           status_changed_at: string
           status_changed_via: Database["public"]["Enums"]["submission_source"]
@@ -1195,6 +1686,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cast_vote: {
+        Args: { p_month: string; p_task_id: string }
+        Returns: undefined
+      }
+      checkout_equipment: {
+        Args: {
+          p_due_back?: string
+          p_id: string
+          p_note?: string
+          p_videographer_id: string
+        }
+        Returns: {
+          category: string
+          checked_out_at: string | null
+          created_at: string
+          due_back: string | null
+          holder_id: string | null
+          id: string
+          name: string
+          notes: string | null
+          serial_no: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "equipment"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      clear_vote: { Args: { p_month: string }; Returns: undefined }
       compute_assessment: {
         Args: { p_month: string; p_videographer_id: string }
         Returns: {
@@ -1296,6 +1819,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           quality_rating: number | null
           sheet_row_ref: string | null
+          shoot_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           status_changed_at: string
           status_changed_via: Database["public"]["Enums"]["submission_source"]
@@ -1316,6 +1840,29 @@ export type Database = {
         Returns: Database["public"]["Enums"]["actor_kind"]
       }
       current_weights: { Args: never; Returns: Json }
+      decide_leave: {
+        Args: { p_decision: string; p_id: string; p_note?: string }
+        Returns: {
+          created_at: string
+          end_date: string
+          id: string
+          kind: string
+          reason: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          videographer_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "leave_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       due_deadline: { Args: { d: string }; Returns: string }
       duplicate_plan: {
         Args: {
@@ -1355,6 +1902,7 @@ export type Database = {
         Returns: undefined
       }
       format_month: { Args: { p_month: string }; Returns: string }
+      format_timecode: { Args: { p_seconds: number }; Returns: string }
       get_account_status: {
         Args: never
         Returns: {
@@ -1365,6 +1913,17 @@ export type Database = {
           last_sign_in_at: string
         }[]
       }
+      get_badges: { Args: { p_videographer_id: string }; Returns: Json }
+      get_client_ratings: {
+        Args: { p_month: string }
+        Returns: {
+          approvals: number
+          avg_rating: number
+          reviews: number
+          videographer_id: string
+        }[]
+      }
+      get_client_review: { Args: { p_token: string }; Returns: Json }
       get_featured_work: {
         Args: { p_month: string }
         Returns: {
@@ -1420,7 +1979,41 @@ export type Database = {
           videographer_id: string
         }[]
       }
+      get_vote_candidates: {
+        Args: { p_month: string }
+        Returns: {
+          avatar_url: string
+          category: string
+          client_name: string
+          is_mine: boolean
+          links: string[]
+          my_vote: boolean
+          task_id: string
+          title: string
+          videographer_id: string
+          videographer_name: string
+          votes: number
+          voting_open: boolean
+        }[]
+      }
+      get_yearly_leaderboard: {
+        Args: { p_year: number }
+        Returns: {
+          avatar_url: string
+          avg_score: number
+          full_name: string
+          months: number
+          rank: number
+          total_score: number
+          videographer_id: string
+        }[]
+      }
+      hook_before_user_created: { Args: { event: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
+      is_admin_email: {
+        Args: { p_confirmed_at: string; p_email: string }
+        Returns: boolean
+      }
       is_featured_task: { Args: { p_task_id: string }; Returns: boolean }
       is_month_final: { Args: { p_month: string }; Returns: boolean }
       is_month_locked: {
@@ -1428,7 +2021,10 @@ export type Database = {
         Returns: boolean
       }
       is_privileged: { Args: never; Returns: boolean }
+      is_reviewer: { Args: never; Returns: boolean }
       is_service_context: { Args: never; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
+      is_vote_candidate: { Args: { p_task_id: string }; Returns: boolean }
       issue_sheet_ping_tokens: {
         Args: { p_spreadsheet_id: string }
         Returns: {
@@ -1549,6 +2145,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           quality_rating: number | null
           sheet_row_ref: string | null
+          shoot_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           status_changed_at: string
           status_changed_via: Database["public"]["Enums"]["submission_source"]
@@ -1560,6 +2157,28 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      return_equipment: {
+        Args: { p_id: string; p_note?: string }
+        Returns: {
+          category: string
+          checked_out_at: string | null
+          created_at: string
+          due_back: string | null
+          holder_id: string | null
+          id: string
+          name: string
+          notes: string | null
+          serial_no: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "equipment"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1592,9 +2211,62 @@ export type Database = {
         }
       }
       safe_ratio: { Args: { p_den: number; p_num: number }; Returns: number }
+      save_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_agent?: string
+        }
+        Returns: undefined
+      }
       set_client_videographers: {
         Args: { p_client_id: string; p_videographer_ids: string[] }
         Returns: number
+      }
+      set_comment_resolved: {
+        Args: { p_id: string; p_resolved: boolean }
+        Returns: {
+          at_seconds: number | null
+          author_id: string | null
+          author_name: string | null
+          author_staff: boolean
+          body: string
+          created_at: string
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          submission_id: string | null
+          task_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "review_comments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_equipment_status: {
+        Args: { p_id: string; p_note?: string; p_status: string }
+        Returns: {
+          category: string
+          checked_out_at: string | null
+          created_at: string
+          due_back: string | null
+          holder_id: string | null
+          id: string
+          name: string
+          notes: string | null
+          serial_no: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "equipment"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       set_featured_work: {
         Args: { p_month: string; p_picks: Json }
@@ -1639,6 +2311,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           quality_rating: number | null
           sheet_row_ref: string | null
+          shoot_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           status_changed_at: string
           status_changed_via: Database["public"]["Enums"]["submission_source"]
@@ -1699,6 +2372,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           quality_rating: number | null
           sheet_row_ref: string | null
+          shoot_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           status_changed_at: string
           status_changed_via: Database["public"]["Enums"]["submission_source"]
@@ -1713,6 +2387,16 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      submit_client_review: {
+        Args: {
+          p_comment?: string
+          p_decision: string
+          p_name?: string
+          p_rating: number
+          p_token: string
+        }
+        Returns: Json
       }
       submit_task: {
         Args: {
@@ -1815,6 +2499,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           quality_rating: number | null
           sheet_row_ref: string | null
+          shoot_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           status_changed_at: string
           status_changed_via: Database["public"]["Enums"]["submission_source"]
@@ -1830,6 +2515,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      voting_open: { Args: { p_month: string }; Returns: boolean }
     }
     Enums: {
       actor_kind: "user" | "sheet" | "system"
@@ -1859,7 +2545,7 @@ export type Database = {
         | "revision_requested"
         | "approved"
         | "cancelled"
-      user_role: "admin" | "videographer"
+      user_role: "admin" | "videographer" | "reviewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2019,7 +2705,7 @@ export const Constants = {
         "approved",
         "cancelled",
       ],
-      user_role: ["admin", "videographer"],
+      user_role: ["admin", "videographer", "reviewer"],
     },
   },
 } as const

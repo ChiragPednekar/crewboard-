@@ -20,6 +20,7 @@ import { usePlanTasks } from '@/features/tasks/api';
 import { useVideographer } from '@/features/videographers/api';
 import { formatDate, formatDateTime, formatMonth, submittedOnTime, timeAgo } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
+import { useClientRatings } from '@/features/client-review/api';
 import { downloadBlob } from '@/lib/export';
 import { computeScore } from '@/lib/scoring';
 import { cn } from '@/lib/utils';
@@ -292,6 +293,7 @@ function Editor({ assessment: a, name, planned, tasksLoading }: { assessment: As
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">Attitude, client feedback, initiative — what the numbers miss.</p>
+                    <ClientRatingHint videographerId={a.videographer_id} month={a.month.slice(0, 7)} />
                     {errors.discretionary && <p className="text-sm text-danger-text">{errors.discretionary}</p>}
                   </div>
 
@@ -508,3 +510,16 @@ function PlannedVsCompleted({ tasks, loading }: { tasks: PlannedTask[]; loading:
   );
 }
 
+
+/** What clients said this month (from approval links), to inform the discretionary score. */
+function ClientRatingHint({ videographerId, month }: { videographerId: string; month: string }) {
+  const ratings = useClientRatings(month);
+  const mine = ratings.data?.find((r) => r.videographer_id === videographerId);
+  if (!mine) return null;
+  return (
+    <p className="rounded-md bg-gold/10 px-2.5 py-1.5 text-xs text-foreground">
+      <span className="font-medium text-gold-text">{Number(mine.avg_rating).toFixed(1)}★ from clients</span> · {mine.reviews}{' '}
+      {mine.reviews === 1 ? 'review' : 'reviews'}, {mine.approvals} approved — roughly {Math.round(Number(mine.avg_rating) * 2)}/10.
+    </p>
+  );
+}

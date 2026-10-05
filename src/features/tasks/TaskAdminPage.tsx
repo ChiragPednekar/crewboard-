@@ -1,22 +1,5 @@
 import { useState } from 'react';
-import {
-  Ban,
-  Building,
-  CalendarClock,
-  ClipboardCheck,
-  Clock,
-  Ellipsis,
-  FileQuestion,
-  FileSpreadsheet,
-  History,
-  Pencil,
-  RotateCcw,
-  Shapes,
-  Star,
-  Trash2,
-  Trophy,
-  UserRound,
-} from 'lucide-react';
+import { Ban, Building, CalendarClock, Camera, ClipboardCheck, Clock, Ellipsis, FileQuestion, FileSpreadsheet, History, Pencil, RotateCcw, Shapes, Star, Trash2, Trophy, UserRound } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 
 import { PlanStatusChip, PriorityChip } from '@/components/Chips';
@@ -42,6 +25,7 @@ import { dueLabel, formatDate, formatDateTime, formatMonth, isOverdue, toMonthKe
 import { cn } from '@/lib/utils';
 
 import { type TaskDetail, useTask, useTaskSubmissions } from './api';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { ReferencesCard } from './ReferencesCard';
 import { canDeleteTask, useTaskActions } from './TaskActions';
 import { TaskFormDialog } from './TaskFormDialog';
@@ -53,6 +37,7 @@ export default function TaskAdminPage() {
   const [editing, setEditing] = useState(false);
   const planUrl = task.data ? `/admin/plans?month=${toMonthKey(task.data.month)}&vid=${task.data.videographer_id}` : '/admin/plans';
   const actions = useTaskActions({ onDeleted: () => navigate(planUrl, { replace: true }) });
+  const { isAdmin } = useAuth();
 
   if (task.isPending) {
     return (
@@ -112,11 +97,12 @@ export default function TaskAdminPage() {
                 </Link>
               </Button>
             )}
-            {!cancelled && (
+            {isAdmin && !cancelled && (
               <Button variant="secondary" onClick={() => setEditing(true)}>
                 <Pencil /> Edit
               </Button>
             )}
+            {isAdmin && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="More actions">
@@ -143,6 +129,7 @@ export default function TaskAdminPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            )}
           </>
         }
       />
@@ -162,7 +149,7 @@ export default function TaskAdminPage() {
             </CardContent>
           </Card>
 
-          <ReferencesCard taskId={t.id} editable={!cancelled} />
+          <ReferencesCard taskId={t.id} editable={isAdmin && !cancelled} />
           <SubmissionsCard task={t} firstName={firstName} />
         </div>
 
@@ -195,6 +182,11 @@ export default function TaskAdminPage() {
                 <DetailRow icon={Shapes} label="Category">
                   {t.category?.name ?? '—'}
                 </DetailRow>
+                {t.shoot_date && (
+                  <DetailRow icon={Camera} label="Shoot">
+                    {formatDate(t.shoot_date, 'EEEE, d MMMM')}
+                  </DetailRow>
+                )}
                 <DetailRow icon={CalendarClock} label="Due">
                   {formatDate(t.due_date, 'EEEE, d MMMM')}
                   {!['approved', 'cancelled', 'submitted'].includes(t.status) && (

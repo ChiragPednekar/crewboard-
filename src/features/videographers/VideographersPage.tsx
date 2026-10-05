@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlarmClock, Building, MapPin, SearchX, UserPlus, Users } from 'lucide-react';
+import { AlarmClock, Building, MailCheck, MapPin, SearchX, UserPlus, Users } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { AccountChip, PlanStatusChip } from '@/components/Chips';
@@ -17,6 +17,7 @@ import { useMonthParam } from '@/hooks/useSearchParamState';
 import { formatMonth } from '@/lib/dates';
 
 import { accountState, emptySummary, useAccounts, useCrewMonth, useVideographers } from './api';
+import { AllowDialog, PendingAllowList } from './AllowList';
 import { InviteDialog } from './dialogs';
 
 type Show = 'active' | 'deactivated' | 'all';
@@ -29,6 +30,7 @@ export default function VideographersPage() {
   const [query, setQuery] = useState('');
   const [show, setShow] = useState<Show>('active');
   const [inviting, setInviting] = useState(false);
+  const [allowing, setAllowing] = useState(false);
 
   const counts = useMemo(() => {
     const list = crew.data ?? [];
@@ -50,11 +52,17 @@ export default function VideographersPage() {
         title="Videographers"
         description="Your crew, their clients and how this month is going."
         actions={
-          <Button onClick={() => setInviting(true)}>
-            <UserPlus /> Add videographer
-          </Button>
+          <>
+            <Button variant="secondary" onClick={() => setAllowing(true)}>
+              <MailCheck /> Add by Google sign-in
+            </Button>
+            <Button onClick={() => setInviting(true)}>
+              <UserPlus /> Invite by email
+            </Button>
+          </>
         }
       />
+      <PendingAllowList />
 
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center">
         <SearchInput value={query} onChange={setQuery} placeholder="Search by name, email or area" className="lg:max-w-xs lg:flex-1" />
@@ -166,6 +174,7 @@ export default function VideographersPage() {
       )}
 
       <InviteDialog open={inviting} onOpenChange={setInviting} />
+      <AllowDialog open={allowing} onOpenChange={setAllowing} />
     </>
   );
 }

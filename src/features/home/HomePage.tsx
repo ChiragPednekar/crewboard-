@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Building, CheckCircle2, Clock, Quote, Radio, Sparkles, Trophy, Users } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
@@ -18,6 +18,8 @@ import { formatMonth, monthKey, shiftMonth } from '@/lib/dates';
 import { cn } from '@/lib/utils';
 
 import { BestWork } from './BestWork';
+import { CrewsChoice, YearlyStandings } from '@/features/motivation/components';
+import { Segmented } from '@/components/Toolbar';
 import { Podium, StandingsChart } from './Standings';
 
 /**
@@ -62,6 +64,7 @@ export default function HomePage() {
 }
 
 function HomeForMonth({ month, setMonth }: { month: string; setMonth: (m: string) => void }) {
+  const [range, setRange] = useState<'month' | 'year'>('month');
   const profile = useProfile();
   const { isAdmin } = useAuth();
   const board = useLeaderboard(month);
@@ -164,12 +167,27 @@ function HomeForMonth({ month, setMonth }: { month: string; setMonth: (m: string
             )}
           </section>
 
+          <CrewsChoice month={month} />
+
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Full standings</CardTitle>
+            <CardHeader className="flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-2">
+              <CardTitle>{range === 'month' ? 'Full standings' : `${month.slice(0, 4)} so far`}</CardTitle>
+              <Segmented
+                label="Standings period"
+                value={range}
+                onChange={setRange}
+                options={[
+                  { value: 'month', label: 'Month' },
+                  { value: 'year', label: 'Year' },
+                ]}
+              />
             </CardHeader>
             <CardContent>
-              <StandingsChart rows={rows} provisional={provisional} meId={profile.id} />
+              {range === 'month' ? (
+                <StandingsChart rows={rows} provisional={provisional} meId={profile.id} />
+              ) : (
+                <YearlyStandings year={Number(month.slice(0, 4))} meId={profile.id} />
+              )}
             </CardContent>
           </Card>
         </div>

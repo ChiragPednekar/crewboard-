@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { MonthPicker } from '@/components/MonthPicker';
 import { PageHeader } from '@/components/PageHeader';
+import { BadgesCard } from '@/features/motivation/components';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,6 +45,11 @@ export default function PointsPage() {
   return (
     <>
       <PageHeader title="My points" description="Your monthly score, how it’s made, and how you’re trending." actions={<MonthPicker value={month} onChange={setMonth} />} />
+      {profile && (
+        <div className="mb-6">
+          <BadgesCard videographerId={profile.id} title="Your badges" />
+        </div>
+      )}
 
       {mine.isError ? (
         <ErrorState error={mine.error} onRetry={() => void mine.refetch()} />

@@ -4,12 +4,16 @@ import {
   Bell,
   CalendarCheck2,
   CalendarClock,
+  Camera,
   CheckCircle2,
   ClipboardList,
   Inbox,
   type LucideIcon,
+  MessageSquareText,
+  Palmtree,
   RotateCcw,
   Trophy,
+  UserCheck,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -24,6 +28,11 @@ const ICONS: Record<string, { icon: LucideIcon; className: string }> = {
   best_work: { icon: Trophy, className: 'text-gold-text bg-gold/12' },
   task_cancelled: { icon: Ban, className: 'text-muted-foreground bg-muted-foreground/10' },
   task_updated: { icon: CalendarClock, className: 'text-warning-text bg-warning/12' },
+  comment: { icon: MessageSquareText, className: 'text-primary-text bg-primary/12' },
+  client_feedback: { icon: UserCheck, className: 'text-success-text bg-success/12' },
+  leave_request: { icon: Palmtree, className: 'text-warning-text bg-warning/12' },
+  leave_decision: { icon: Palmtree, className: 'text-success-text bg-success/12' },
+  gear_checkout: { icon: Camera, className: 'text-violet-text bg-violet/12' },
 };
 
 export function NotificationIcon({ type, className }: { type: string; className?: string }) {

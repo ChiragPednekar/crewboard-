@@ -9,8 +9,10 @@ import { RouterProvider } from 'react-router';
 import { AppProviders } from './app/providers';
 import { router } from './app/router';
 import { envError } from './lib/env';
+import { registerServiceWorker } from './lib/push';
 
 const root = createRoot(document.getElementById('root')!);
+registerServiceWorker();
 
 if (envError) {
   root.render(

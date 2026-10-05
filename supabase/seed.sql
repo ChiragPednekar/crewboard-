@@ -494,3 +494,91 @@ begin
    where type in ('assessment_published', 'best_work') and user_id <> v_arjun;
 end;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Expansion demo data: shoot dates, equipment, leave, review notes,
+-- a client approval, crew votes, and the allow-list for the seeded accounts.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_admin  uuid := '00000000-0000-4000-a000-000000000001';
+  v_arjun  uuid := '00000000-0000-4000-a000-000000000011';
+  v_priya  uuid := '00000000-0000-4000-a000-000000000012';
+  v_rohan  uuid := '00000000-0000-4000-a000-000000000013';
+  v_sana   uuid := '00000000-0000-4000-a000-000000000014';
+  v_vikram uuid := '00000000-0000-4000-a000-000000000015';
+  m0 date := public.month_start(public.today_ist());
+  m1 date := (public.month_start(public.today_ist()) - interval '1 month')::date;
+  v_task uuid;
+  v_sub  uuid;
+  cam1 uuid; cam2 uuid;
+begin
+  -- the seeded people are on the allow-list like real crew would be
+  insert into public.allowed_emails (email, full_name, claimed_at, claimed_by)
+  select lower(email), full_name, now(), id from public.profiles
+  on conflict (email) do nothing;
+
+  -- shoot dates: a few days before each open task is due (one deliberate clash for Arjun)
+  update public.tasks
+     set shoot_date = greatest(month, due_date - 3)
+   where month in (m0, m1) and status <> 'cancelled';
+  update public.tasks set shoot_date = (select shoot_date from public.tasks where videographer_id = v_arjun and month = m0 order by due_date limit 1)
+   where id = (select id from public.tasks where videographer_id = v_arjun and month = m0 order by due_date offset 1 limit 1);
+
+  -- equipment
+  insert into public.equipment (name, category, serial_no, notes) values
+    ('Sony FX3 #1', 'camera', 'FX3-40112', 'With cage, 2 NP-FZ100 batteries'),
+    ('Sony FX3 #2', 'camera', 'FX3-40187', null),
+    ('Sony 24-70 GM II', 'lens', 'SEL2470GM2-88', null),
+    ('Rode Wireless PRO kit', 'audio', 'RWP-2231', 'Two TX + one RX, charging case'),
+    ('Aputure 300d II', 'lighting', 'AP300-7781', 'Light dome + stand'),
+    ('DJI RS 3 Pro', 'gimbal', 'RS3P-1029', null),
+    ('DJI Mini 4 Pro', 'drone', 'MINI4-5521', 'Registered on Digital Sky');
+  select id into cam1 from public.equipment where name = 'Sony FX3 #1';
+  select id into cam2 from public.equipment where name = 'Sony FX3 #2';
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_admin, 'role', 'authenticated')::text, true);
+  perform public.checkout_equipment(cam1, v_arjun, public.today_ist() + 10, 'Hospital shoots this month');
+  perform public.checkout_equipment(cam2, v_priya, public.today_ist() - 1, 'Kesar Diwali shoot');
+  perform public.checkout_equipment((select id from public.equipment where name = 'Rode Wireless PRO kit'), v_arjun, public.today_ist() + 10, null);
+  perform public.set_equipment_status((select id from public.equipment where name = 'DJI Mini 4 Pro'), 'maintenance', 'Gimbal calibration');
+
+  -- leave: one approved (Sana), one pending (Rohan)
+  insert into public.leave_requests (videographer_id, start_date, end_date, kind, reason)
+  values (v_sana, public.today_ist() + 6, public.today_ist() + 8, 'leave', 'Cousin''s wedding in Goa');
+  perform public.decide_leave((select id from public.leave_requests where videographer_id = v_sana), 'approved', 'Enjoy!');
+  insert into public.leave_requests (videographer_id, start_date, end_date, kind, reason)
+  values (v_rohan, public.today_ist() + 12, public.today_ist() + 12, 'unavailable', 'Exam');
+
+  -- timestamped notes on Rohan's revision (the reel sent back for audio fixes)
+  select t.id, s.id into v_task, v_sub
+    from public.tasks t join public.submissions s on s.task_id = t.id
+   where t.videographer_id = v_rohan and t.status = 'revision_requested'
+   order by s.version desc limit 1;
+  if v_task is not null then
+    insert into public.review_comments (task_id, submission_id, author_id, at_seconds, body) values
+      (v_task, v_sub, v_admin, 3, 'Audio clips here — bring the VO down ~3 dB.'),
+      (v_task, v_sub, v_admin, 27, 'Logo end-card is missing; use the white version on dark.');
+  end if;
+
+  -- a client approval on last month's best work
+  select id into v_task from public.tasks where videographer_id = v_arjun and month = m1 and title like 'Knee replacement%';
+  if v_task is not null then
+    insert into public.client_review_links (task_id, created_by, client_contact, responded_at, decision, rating, comment, responder_name, expires_at)
+    values (v_task, v_admin, 'Dr. Meera Iyer', now() - interval '20 days', 'approved', 5,
+            'Exactly what we wanted for the OPD screens. Patients love it.', 'Dr. Meera Iyer', now() + interval '7 days');
+  end if;
+
+  -- crew votes for last month
+  perform set_config('request.jwt.claims', json_build_object('sub', v_priya, 'role', 'authenticated')::text, true);
+  perform public.cast_vote(m1, (select id from public.tasks where videographer_id = v_arjun and month = m1 and title like 'Knee replacement%'));
+  perform set_config('request.jwt.claims', json_build_object('sub', v_sana, 'role', 'authenticated')::text, true);
+  perform public.cast_vote(m1, (select id from public.tasks where videographer_id = v_arjun and month = m1 and title like 'Knee replacement%'));
+  perform set_config('request.jwt.claims', json_build_object('sub', v_rohan, 'role', 'authenticated')::text, true);
+  perform public.cast_vote(m1, (select id from public.tasks where videographer_id = v_priya and month = m1 and title like 'Festive sweets%'));
+  perform set_config('request.jwt.claims', '', true);
+
+  -- keep demo notifications tidy
+  update public.notifications set read_at = now() where type in ('gear_checkout', 'leave_decision', 'leave_request', 'comment') and user_id <> v_rohan;
+end;
+$$;

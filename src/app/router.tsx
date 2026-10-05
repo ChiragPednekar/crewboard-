@@ -34,6 +34,14 @@ const PointsPage = lazy(() => import('@/features/crew/PointsPage'));
 const HomePage = lazy(() => import('@/features/home/HomePage'));
 const FeaturedPickerPage = lazy(() => import('@/features/home/FeaturedPickerPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
+const CalendarPage = lazy(() => import('@/features/calendar/CalendarPage'));
+const ApprovePage = lazy(() => import('@/features/client-review/ApprovePage'));
+const PrivacyPage = lazy(() => import('@/features/legal/LegalPages').then((m) => ({ default: m.PrivacyPage })));
+const TermsPage = lazy(() => import('@/features/legal/LegalPages').then((m) => ({ default: m.TermsPage })));
+const MyLeavePage = lazy(() => import('@/features/leave/LeavePages').then((m) => ({ default: m.MyLeavePage })));
+const AdminLeavePage = lazy(() => import('@/features/leave/LeavePages').then((m) => ({ default: m.AdminLeavePage })));
+const EquipmentPage = lazy(() => import('@/features/equipment/EquipmentPages').then((m) => ({ default: m.EquipmentPage })));
+const MyGearPage = lazy(() => import('@/features/equipment/EquipmentPages').then((m) => ({ default: m.MyGearPage })));
 
 /** AuthProvider needs router context (navigate on recovery / sign-out). */
 function Root() {
@@ -67,6 +75,11 @@ export const router = createBrowserRouter([
         ],
       },
 
+      // Public pages (no account): legal pages and the client approval link
+      { path: '/privacy', element: <PrivacyPage /> },
+      { path: '/terms', element: <TermsPage /> },
+      { path: '/approve/:token', element: <ApprovePage /> },
+
       // Signed-in app
       {
         element: <RequireAuth />,
@@ -80,23 +93,32 @@ export const router = createBrowserRouter([
 
               {
                 path: '/admin',
-                element: <RequireRole role="admin" />,
+                // reviewers review work; everything else in /admin is for admins
+                element: <RequireRole roles={['admin', 'reviewer']} />,
                 children: [
-                  { index: true, element: <AdminDashboardPage /> },
-                  { path: 'videographers', element: <VideographersPage /> },
-                  { path: 'videographers/:id', element: <VideographerDetailPage /> },
-                  { path: 'clients', element: <ClientsPage /> },
-                  { path: 'clients/:id', element: <ClientDetailPage /> },
-                  { path: 'plans', element: <PlansPage /> },
-                  { path: 'tasks/:id', element: <TaskAdminPage /> },
                   { path: 'review', element: <ReviewQueuePage /> },
                   { path: 'review/:taskId', element: <ReviewPage /> },
-                  { path: 'assessments', element: <AssessmentsPage /> },
-                  { path: 'assessments/:videographerId/:month', element: <AssessmentEditorPage /> },
-                  { path: 'featured', element: <FeaturedPickerPage /> },
-                  { path: 'activity', element: <ActivityPage /> },
-                  { path: 'settings', element: <SettingsPage /> },
-                  { path: 'styleguide', element: <StyleguidePage /> },
+                  { path: 'tasks/:id', element: <TaskAdminPage /> },
+                  { path: 'calendar', element: <CalendarPage /> },
+                  {
+                    element: <RequireRole role="admin" />,
+                    children: [
+                      { index: true, element: <AdminDashboardPage /> },
+                      { path: 'videographers', element: <VideographersPage /> },
+                      { path: 'videographers/:id', element: <VideographerDetailPage /> },
+                      { path: 'clients', element: <ClientsPage /> },
+                      { path: 'clients/:id', element: <ClientDetailPage /> },
+                      { path: 'plans', element: <PlansPage /> },
+                      { path: 'leave', element: <AdminLeavePage /> },
+                      { path: 'equipment', element: <EquipmentPage /> },
+                      { path: 'assessments', element: <AssessmentsPage /> },
+                      { path: 'assessments/:videographerId/:month', element: <AssessmentEditorPage /> },
+                      { path: 'featured', element: <FeaturedPickerPage /> },
+                      { path: 'activity', element: <ActivityPage /> },
+                      { path: 'settings', element: <SettingsPage /> },
+                      { path: 'styleguide', element: <StyleguidePage /> },
+                    ],
+                  },
                 ],
               },
 
@@ -107,6 +129,9 @@ export const router = createBrowserRouter([
                   { index: true, element: <CrewDashboardPage /> },
                   { path: 'tasks/:id', element: <CrewTaskPage /> },
                   { path: 'points', element: <PointsPage /> },
+                  { path: 'calendar', element: <CalendarPage /> },
+                  { path: 'leave', element: <MyLeavePage /> },
+                  { path: 'gear', element: <MyGearPage /> },
                 ],
               },
 

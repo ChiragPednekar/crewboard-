@@ -283,9 +283,10 @@ max_frequency = "5s"
 # inactivity_timeout = "8h"
 
 # This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
-# [auth.hook.before_user_created]
-# enabled = true
-# uri = "pg-functions://postgres/auth/before-user-created-hook"
+# CrewBoard: only allow-listed emails (allowed_emails / admin_emails) can create an account.
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/hook_before_user_created"
 
 # This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
 # [auth.hook.custom_access_token]
@@ -395,6 +396,11 @@ deno_version = 2
 GOOGLE_SERVICE_ACCOUNT_JSON = "env(GOOGLE_SERVICE_ACCOUNT_JSON)"
 GOOGLE_SHEETS_API_BASE = "env(GOOGLE_SHEETS_API_BASE)"
 SYNC_CRON_SECRET = "env(SYNC_CRON_SECRET)"
+# notify-dispatch (push + WhatsApp). Leave unset to switch a channel off.
+VAPID_PUBLIC_KEY = "env(VAPID_PUBLIC_KEY)"
+VAPID_PRIVATE_KEY = "env(VAPID_PRIVATE_KEY)"
+VAPID_SUBJECT = "env(VAPID_SUBJECT)"
+APP_URL = "env(APP_URL)"
 
 [analytics]
 enabled = false
@@ -427,4 +433,8 @@ enabled = true
 # The sheets function authenticates itself (admin JWT, or the cron's x-sync-secret header),
 # so the gateway must let the pg_cron request through without a user JWT.
 [functions.sheets]
+verify_jwt = false
+
+# Called by the notifications trigger (pg_net) with the x-dispatch-secret header.
+[functions.notify-dispatch]
 verify_jwt = false

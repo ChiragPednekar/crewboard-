@@ -9,7 +9,17 @@ import type { UserRole } from '@/lib/supabase';
 import { useAuth } from './AuthProvider';
 
 export function roleHome(role: UserRole): string {
-  return role === 'admin' ? '/admin' : '/me';
+  if (role === 'admin') return '/admin';
+  if (role === 'reviewer') return '/admin/review';
+  return '/me';
+}
+
+/** Admin-area pages a reviewer may open (they review work; they don't run the studio). */
+export const REVIEWER_PATHS = ['/admin/review', '/admin/tasks/', '/admin/calendar'];
+
+function reviewerMayOpen(path: string): boolean {
+  const p = path.split('?')[0] ?? '';
+  return REVIEWER_PATHS.some((r) => p === r || p.startsWith(r.endsWith('/') ? r : `${r}/`));
 }
 
 /** Gate for every signed-in screen. */
@@ -29,13 +39,15 @@ export function RequireAuth() {
  * UI-level role gate. The database enforces the same rule with RLS, so bypassing
  * this in the browser only shows empty screens — it never exposes data.
  */
-export function RequireRole({ role }: { role: UserRole }) {
+export function RequireRole({ role, roles }: { role?: UserRole; roles?: UserRole[] }) {
   const { profile } = useAuth();
-  const denied = Boolean(profile && profile.role !== role);
+  const allowed = roles ?? (role ? [role] : []);
+  const denied = Boolean(profile && !allowed.includes(profile.role));
 
   useEffect(() => {
-    if (denied) toast.error(role === 'admin' ? 'That area is for admins only.' : 'That area is for videographers.');
-  }, [denied, role]);
+    if (denied) toast.error(allowed.includes('videographer') ? 'That area is for videographers.' : 'That area is for admins only.');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [denied]);
 
   if (!profile) return null;
   if (denied) return <Navigate to={roleHome(profile.role)} replace />;
@@ -44,7 +56,7 @@ export function RequireRole({ role }: { role: UserRole }) {
 
 /** Is `path` a page this role may open? (A shared device may hand us the previous user's last page.) */
 export function canOpen(role: UserRole, path: string): boolean {
-  if (path.startsWith('/admin')) return role === 'admin';
+  if (path.startsWith('/admin')) return role === 'admin' || (role === 'reviewer' && reviewerMayOpen(path));
   if (path === '/me' || path.startsWith('/me/')) return role === 'videographer';
   return !['/login', '/forgot-password', '/reset-password', '/auth/confirm'].includes(path.split('?')[0] ?? '');
 }

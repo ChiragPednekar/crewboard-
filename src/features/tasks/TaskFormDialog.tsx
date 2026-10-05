@@ -33,7 +33,7 @@ interface TaskFormDialogProps {
   videographerId?: string;
   planStatus?: PlanStatus | null;
   /** Edit mode */
-  task?: Pick<Task, 'id' | 'title' | 'brief' | 'client_id' | 'category_id' | 'due_date' | 'priority' | 'max_points' | 'status' | 'points_awarded'>;
+  task?: Pick<Task, 'id' | 'title' | 'brief' | 'client_id' | 'category_id' | 'due_date' | 'shoot_date' | 'priority' | 'max_points' | 'status' | 'points_awarded'>;
   onCreated?: (count: number) => void;
 }
 
@@ -59,6 +59,7 @@ export function TaskFormDialog({ open, onOpenChange, month, videographerId, plan
             client_id: task.client_id,
             category_id: task.category_id,
             due_date: task.due_date,
+            shoot_date: task.shoot_date ?? '',
             priority: task.priority,
             max_points: task.max_points,
             assignees: [],
@@ -70,6 +71,7 @@ export function TaskFormDialog({ open, onOpenChange, month, videographerId, plan
             client_id: '',
             category_id: '',
             due_date: defaultDueDate(month),
+            shoot_date: '',
             priority: 'normal',
             max_points: Number.NaN,
             assignees: videographerId ? [videographerId] : [],
@@ -237,7 +239,20 @@ export function TaskFormDialog({ open, onOpenChange, month, videographerId, plan
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="shoot_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shoot date (optional)</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="due_date"
