@@ -10,45 +10,14 @@ import { Input } from '@/components/ui/input';
 import { friendlyError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
+import { GoogleIcon, readOAuthError, useGoogleSignIn } from '../google';
 import { loginSchema, type LoginValues } from '../schemas';
-
-/** OAuth failures come back to /login as ?error_description=… (or in the hash). */
-function readOAuthError(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  const hash = new URLSearchParams(window.location.hash.slice(1));
-  const message = params.get('error_description') ?? hash.get('error_description');
-  return message ? message.replace(/\+/g, ' ') : null;
-}
-
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 48 48" aria-hidden className="h-[18px] w-[18px]">
-      <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z" />
-      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" />
-      <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z" />
-    </svg>
-  );
-}
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(readOAuthError);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const google = useGoogleSignIn(setFormError);
 
-  async function signInWithGoogle() {
-    setFormError(null);
-    setGoogleLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      // come back to /login: errors show here, a signed-in user is redirected onwards
-      options: { redirectTo: `${window.location.origin}/login`, queryParams: { prompt: 'select_account' } },
-    });
-    if (error) {
-      setFormError(friendlyError(error));
-      setGoogleLoading(false);
-    }
-  }
   const form = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
 
   async function onSubmit(values: LoginValues) {
@@ -68,10 +37,10 @@ export default function LoginPage() {
         variant="secondary"
         size="lg"
         className="mt-8 w-full bg-background/40"
-        onClick={() => void signInWithGoogle()}
-        loading={googleLoading}
+        onClick={() => void google.start()}
+        loading={google.loading}
       >
-        {!googleLoading && <GoogleIcon />} Continue with Google
+        {!google.loading && <GoogleIcon />} Continue with Google
       </Button>
 
       <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground" aria-hidden>
@@ -145,8 +114,13 @@ export default function LoginPage() {
       </Form>
 
       <p className="mt-8 text-center text-xs text-muted-foreground">
-        New to the crew? Ask your studio admin to add your email, then continue with Google.
-        <span className="mt-2 block">
+        <span className="block text-sm">
+          New to CrewBoard?{' '}
+          <Link to="/signup" className="font-medium text-primary-text hover:underline">
+            Create an account
+          </Link>
+        </span>
+        <span className="mt-3 block">
           <Link to="/privacy" className="hover:text-foreground hover:underline">
             Privacy
           </Link>

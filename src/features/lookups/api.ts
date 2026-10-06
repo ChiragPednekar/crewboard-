@@ -52,6 +52,7 @@ export function useCrewOptions() {
         .from('profiles')
         .select('id, full_name, avatar_url, is_active')
         .eq('role', 'videographer')
+        .eq('approval_status', 'approved')
         .order('is_active', { ascending: false })
         .order('full_name');
       if (error) throw error;

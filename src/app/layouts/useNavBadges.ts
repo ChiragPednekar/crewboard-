@@ -8,6 +8,7 @@ import type { NavBadge } from './nav';
 
 export const reviewQueueCountKey = ['tasks', 'review-queue-count'] as const;
 export const pendingLeaveCountKey = ['leave', 'pending-count'] as const;
+export const pendingSignupCountKey = ['signup-requests', 'pending-count'] as const;
 
 /** Counts shown next to nav items. */
 export function useNavBadges(): Record<NavBadge, number> {
@@ -40,5 +41,18 @@ export function useNavBadges(): Record<NavBadge, number> {
       return count ?? 0;
     },
   });
-  return { review: review.data ?? 0, unread: unread.data ?? 0, leave: leave.data ?? 0 };
+  const signups = useQuery({
+    queryKey: pendingSignupCountKey,
+    enabled: isAdmin,
+    refetchInterval: 120_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('approval_status', 'pending');
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+  return { review: review.data ?? 0, unread: unread.data ?? 0, leave: leave.data ?? 0, signups: signups.data ?? 0 };
 }

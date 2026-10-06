@@ -18,6 +18,7 @@ import { formatMonth } from '@/lib/dates';
 
 import { accountState, emptySummary, useAccounts, useCrewMonth, useVideographers } from './api';
 import { AllowDialog, PendingAllowList } from './AllowList';
+import { SignupRequests } from './SignupRequests';
 import { InviteDialog } from './dialogs';
 
 type Show = 'active' | 'deactivated' | 'all';
@@ -62,6 +63,7 @@ export default function VideographersPage() {
           </>
         }
       />
+      <SignupRequests />
       <PendingAllowList />
 
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center">

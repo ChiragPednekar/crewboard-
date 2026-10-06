@@ -10,6 +10,7 @@ import { AppShell } from './layouts/AppShell';
 import { AuthLayout } from './layouts/AuthLayout';
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
+const SignUpPage = lazy(() => import('@/features/auth/pages/SignUpPage'));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage'));
 const AuthConfirmPage = lazy(() => import('@/features/auth/pages/AuthConfirmPage'));
@@ -67,6 +68,7 @@ export const router = createBrowserRouter([
             element: <RedirectIfSignedIn />,
             children: [
               { path: '/login', element: <LoginPage /> },
+              { path: '/signup', element: <SignUpPage /> },
               { path: '/forgot-password', element: <ForgotPasswordPage /> },
             ],
           },

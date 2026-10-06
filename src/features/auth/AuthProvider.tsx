@@ -6,7 +6,25 @@ import { toast } from 'sonner';
 
 import { supabase, type Profile } from '@/lib/supabase';
 
-type AuthStatus = 'loading' | 'signed-out' | 'signed-in' | 'no-profile';
+type AuthStatus = 'loading' | 'signed-out' | 'signed-in' | 'no-profile' | 'awaiting-approval' | 'declined';
+
+export type AccessStatus = 'approved' | 'pending' | 'declined';
+
+/**
+ * The access token hook stamps each session with `crewboard_access`. Sessions of
+ * sign-ups that wait for approval carry the `anon` database role, so they can read
+ * nothing; the app shows the waiting screen instead of loading the workspace.
+ */
+export function accessFromToken(accessToken: string | undefined): AccessStatus {
+  if (!accessToken) return 'approved';
+  try {
+    const part = accessToken.split('.')[1] ?? '';
+    const claims = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as { crewboard_access?: string };
+    return claims.crewboard_access === 'pending' || claims.crewboard_access === 'declined' ? claims.crewboard_access : 'approved';
+  } catch {
+    return 'approved';
+  }
+}
 
 interface AuthContextValue {
   status: AuthStatus;
@@ -51,9 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [navigate, queryClient]);
 
   const userId = session?.user.id;
+  const access = accessFromToken(session?.access_token);
   const profileQuery = useQuery({
     queryKey: profileQueryKey(userId),
-    enabled: Boolean(userId),
+    enabled: Boolean(userId) && access === 'approved',
     staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId!).maybeSingle();
@@ -81,11 +100,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? 'loading'
     : !session
       ? 'signed-out'
-      : profileQuery.isPending
-        ? 'loading'
-        : profile
-          ? 'signed-in'
-          : 'no-profile';
+      : access === 'pending'
+        ? 'awaiting-approval'
+        : access === 'declined'
+          ? 'declined'
+          : profileQuery.isPending
+            ? 'loading'
+            : profile
+              ? 'signed-in'
+              : 'no-profile';
 
   const value = useMemo<AuthContextValue>(
     () => ({ status, session, profile, isAdmin: profile?.role === 'admin', signOut }),

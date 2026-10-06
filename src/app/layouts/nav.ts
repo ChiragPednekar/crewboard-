@@ -20,7 +20,7 @@ import {
 
 import type { UserRole } from '@/lib/supabase';
 
-export type NavBadge = 'review' | 'unread' | 'leave';
+export type NavBadge = 'review' | 'unread' | 'leave' | 'signups';
 
 export interface NavItem {
   to: string;
@@ -53,7 +53,7 @@ const ADMIN_NAV: NavGroup[] = [
   {
     label: 'Manage',
     items: [
-      { to: '/admin/videographers', label: 'Videographers', icon: Users },
+      { to: '/admin/videographers', label: 'Videographers', icon: Users, badge: 'signups' },
       { to: '/admin/clients', label: 'Clients', icon: Building2 },
       { to: '/admin/plans', label: 'Monthly plans', icon: CalendarRange },
       { to: '/admin/leave', label: 'Leave', icon: Palmtree, badge: 'leave' },

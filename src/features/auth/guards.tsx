@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { FullPageLoader } from '@/components/FullPageLoader';
 import { AccountNotReady } from '@/features/auth/pages/AccountNotReady';
+import { AwaitingApproval } from '@/features/auth/pages/AwaitingApproval';
 import type { UserRole } from '@/lib/supabase';
 
 import { useAuth } from './AuthProvider';
@@ -29,6 +30,8 @@ export function RequireAuth() {
 
   if (status === 'loading') return <FullPageLoader label="Loading your workspace" />;
   if (status === 'no-profile') return <AccountNotReady />;
+  if (status === 'awaiting-approval') return <AwaitingApproval />;
+  if (status === 'declined') return <AwaitingApproval declined />;
   if (status === 'signed-out') {
     return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   }
@@ -58,7 +61,7 @@ export function RequireRole({ role, roles }: { role?: UserRole; roles?: UserRole
 export function canOpen(role: UserRole, path: string): boolean {
   if (path.startsWith('/admin')) return role === 'admin' || (role === 'reviewer' && reviewerMayOpen(path));
   if (path === '/me' || path.startsWith('/me/')) return role === 'videographer';
-  return !['/login', '/forgot-password', '/reset-password', '/auth/confirm'].includes(path.split('?')[0] ?? '');
+  return !['/login', '/signup', '/forgot-password', '/reset-password', '/auth/confirm'].includes(path.split('?')[0] ?? '');
 }
 
 /** Login & friends: bounce signed-in users back to where they were going. */
@@ -68,6 +71,8 @@ export function RedirectIfSignedIn() {
   const from = (location.state as { from?: string } | null)?.from;
 
   if (status === 'loading') return <FullPageLoader />;
+  // a fresh sign-up lands back here from Google; the signed-in area shows the waiting screen
+  if (status === 'awaiting-approval' || status === 'declined') return <Navigate to="/" replace />;
   if (status === 'signed-in' && profile) {
     return <Navigate to={from && canOpen(profile.role, from) ? from : '/'} replace />;
   }

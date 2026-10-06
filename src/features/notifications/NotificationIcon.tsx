@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Trophy,
   UserCheck,
+  UserPlus,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -33,6 +34,8 @@ const ICONS: Record<string, { icon: LucideIcon; className: string }> = {
   leave_request: { icon: Palmtree, className: 'text-warning-text bg-warning/12' },
   leave_decision: { icon: Palmtree, className: 'text-success-text bg-success/12' },
   gear_checkout: { icon: Camera, className: 'text-violet-text bg-violet/12' },
+  signup_request: { icon: UserPlus, className: 'text-primary-text bg-primary/12' },
+  signup_approved: { icon: UserCheck, className: 'text-success-text bg-success/12' },
 };
 
 export function NotificationIcon({ type, className }: { type: string; className?: string }) {

@@ -818,6 +818,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_decided_at: string | null
+          approval_decided_by: string | null
+          approval_status: string
           avatar_url: string | null
           base_location: string | null
           created_at: string
@@ -833,6 +836,9 @@ export type Database = {
           whatsapp_opt_in: boolean
         }
         Insert: {
+          approval_decided_at?: string | null
+          approval_decided_by?: string | null
+          approval_status?: string
           avatar_url?: string | null
           base_location?: string | null
           created_at?: string
@@ -848,6 +854,9 @@ export type Database = {
           whatsapp_opt_in?: boolean
         }
         Update: {
+          approval_decided_at?: string | null
+          approval_decided_by?: string | null
+          approval_status?: string
           avatar_url?: string | null
           base_location?: string | null
           created_at?: string
@@ -862,7 +871,15 @@ export type Database = {
           whatsapp_number?: string | null
           whatsapp_opt_in?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_approval_decided_by_fkey"
+            columns: ["approval_decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
@@ -1690,6 +1707,7 @@ export type Database = {
         Args: { p_month: string; p_task_id: string }
         Returns: undefined
       }
+      check_dispatch_secret: { Args: { p_secret: string }; Returns: boolean }
       checkout_equipment: {
         Args: {
           p_due_back?: string
@@ -1840,6 +1858,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["actor_kind"]
       }
       current_weights: { Args: never; Returns: Json }
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       decide_leave: {
         Args: { p_decision: string; p_id: string; p_note?: string }
         Returns: {
@@ -1859,6 +1878,38 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "leave_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      decide_signup: {
+        Args: {
+          p_approve: boolean
+          p_client_ids?: string[]
+          p_role?: string
+          p_user_id: string
+        }
+        Returns: {
+          approval_decided_at: string | null
+          approval_decided_by: string | null
+          approval_status: string
+          avatar_url: string | null
+          base_location: string | null
+          created_at: string
+          deactivated_at: string | null
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          whatsapp_number: string | null
+          whatsapp_opt_in: boolean
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2046,6 +2097,7 @@ export type Database = {
       }
       mark_notifications_read: { Args: { p_ids?: string[] }; Returns: number }
       month_start: { Args: { d: string }; Returns: string }
+      my_access: { Args: never; Returns: Json }
       notify: {
         Args: {
           p_body: string

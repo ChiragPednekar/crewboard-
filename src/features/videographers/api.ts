@@ -51,6 +51,7 @@ export function useVideographers() {
         .from('profiles')
         .select(`*, ${CLIENTS_EMBED}`)
         .eq('role', 'videographer')
+        .eq('approval_status', 'approved') // sign-up requests are listed separately
         .order('full_name');
       if (error) throw error;
       return (data as unknown as (Profile & { videographer_clients: ClientRow[] })[]).map(withClients);

@@ -70,6 +70,12 @@ function describeAction(e: Entry): { icon: LucideIcon; text: string } {
       return { icon: UserPlus, text: `Invited ${what}` };
     case 'videographer.deactivated':
       return { icon: UserX, text: `Deactivated ${what}` };
+    case 'signup.requested':
+      return { icon: UserPlus, text: `${what} signed up and is waiting for approval` };
+    case 'signup.approved':
+      return { icon: UserCheck, text: `Approved ${what}'s sign-up${p.role === 'reviewer' ? ' as a reviewer' : ''}` };
+    case 'signup.declined':
+      return { icon: UserX, text: `Declined ${what}'s sign-up` };
     case 'videographer.reactivated':
       return { icon: UserCheck, text: `Reactivated ${what}` };
     case 'videographer.clients_set':
