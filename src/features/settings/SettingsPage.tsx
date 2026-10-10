@@ -1,4 +1,4 @@
-import { FileSpreadsheet, Palette, Scale, Shapes } from 'lucide-react';
+import { FileSpreadsheet, Lock, Palette, Scale, Shapes } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { PageHeader } from '@/components/PageHeader';
@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEnumParam } from '@/hooks/useSearchParamState';
 
+import { AccessTab } from './AccessTab';
 import { CategoriesTab } from './CategoriesTab';
 import { ScoringTab } from './ScoringTab';
 import { SheetsTab } from './SheetsTab';
 
-const TABS = ['sheets', 'categories', 'scoring'] as const;
+const TABS = ['sheets', 'categories', 'scoring', 'access'] as const;
 
 export default function SettingsPage() {
   const [tab, setTab] = useEnumParam('tab', TABS, 'sheets');
@@ -18,7 +19,7 @@ export default function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        description="Google Sheets sync, task categories and how monthly scores are weighted."
+        description="Google Sheets sync, task categories, how monthly scores are weighted, and who can join."
         actions={
           <Button asChild variant="ghost" size="sm">
             <Link to="/admin/styleguide">
@@ -39,6 +40,9 @@ export default function SettingsPage() {
             <TabsTrigger value="scoring">
               <Scale aria-hidden /> Scoring
             </TabsTrigger>
+            <TabsTrigger value="access">
+              <Lock aria-hidden /> Access
+            </TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="sheets">
@@ -49,6 +53,9 @@ export default function SettingsPage() {
         </TabsContent>
         <TabsContent value="scoring">
           <ScoringTab />
+        </TabsContent>
+        <TabsContent value="access">
+          <AccessTab />
         </TabsContent>
       </Tabs>
     </>

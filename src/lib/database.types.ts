@@ -159,9 +159,11 @@ export type Database = {
       }
       app_settings: {
         Row: {
+          company_domains: string[]
           id: boolean
           master_spreadsheet_id: string | null
           sheet_mode: Database["public"]["Enums"]["sheet_mode"]
+          signup_mode: string
           sync_enabled: boolean
           updated_at: string
           updated_by: string | null
@@ -171,9 +173,11 @@ export type Database = {
           weight_punctuality: number
         }
         Insert: {
+          company_domains?: string[]
           id?: boolean
           master_spreadsheet_id?: string | null
           sheet_mode?: Database["public"]["Enums"]["sheet_mode"]
+          signup_mode?: string
           sync_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -183,9 +187,11 @@ export type Database = {
           weight_punctuality?: number
         }
         Update: {
+          company_domains?: string[]
           id?: boolean
           master_spreadsheet_id?: string | null
           sheet_mode?: Database["public"]["Enums"]["sheet_mode"]
+          signup_mode?: string
           sync_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -2071,6 +2077,7 @@ export type Database = {
         Args: { p_confirmed_at: string; p_email: string }
         Returns: boolean
       }
+      is_company_email: { Args: { p_email: string }; Returns: boolean }
       is_featured_task: { Args: { p_task_id: string }; Returns: boolean }
       is_month_final: { Args: { p_month: string }; Returns: boolean }
       is_month_locked: {
@@ -2078,6 +2085,7 @@ export type Database = {
         Returns: boolean
       }
       is_privileged: { Args: never; Returns: boolean }
+      is_public_email_domain: { Args: { p_domain: string }; Returns: boolean }
       is_reviewer: { Args: never; Returns: boolean }
       is_service_context: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
@@ -2410,6 +2418,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      signup_requests_open: { Args: never; Returns: boolean }
       start_task: {
         Args: { p_task_id: string }
         Returns: {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { friendlyError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
@@ -48,4 +49,17 @@ export function useGoogleSignIn(onError: (message: string | null) => void, retur
     }
   }
   return { start, loading };
+}
+
+/** Whether the studio lets strangers request an account (off by default: invite-only). */
+export function useSignupRequestsOpen() {
+  return useQuery({
+    queryKey: ['signup-requests-open'],
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('signup_requests_open');
+      if (error) throw error;
+      return data === true;
+    },
+  });
 }

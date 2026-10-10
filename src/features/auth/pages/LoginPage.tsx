@@ -10,13 +10,14 @@ import { Input } from '@/components/ui/input';
 import { friendlyError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
-import { GoogleIcon, readOAuthError, useGoogleSignIn } from '../google';
+import { GoogleIcon, readOAuthError, useGoogleSignIn, useSignupRequestsOpen } from '../google';
 import { loginSchema, type LoginValues } from '../schemas';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(readOAuthError);
   const google = useGoogleSignIn(setFormError);
+  const signupOpen = useSignupRequestsOpen();
 
   const form = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
 
@@ -114,12 +115,16 @@ export default function LoginPage() {
       </Form>
 
       <p className="mt-8 text-center text-xs text-muted-foreground">
-        <span className="block text-sm">
-          New to CrewBoard?{' '}
-          <Link to="/signup" className="font-medium text-primary-text hover:underline">
-            Create an account
-          </Link>
-        </span>
+        {signupOpen.data ? (
+          <span className="block text-sm">
+            New to CrewBoard?{' '}
+            <Link to="/signup" className="font-medium text-primary-text hover:underline">
+              Create an account
+            </Link>
+          </span>
+        ) : (
+          <span className="block text-sm">New to the team? Ask your studio admin to add your email, then continue with Google.</span>
+        )}
         <span className="mt-3 block">
           <Link to="/privacy" className="hover:text-foreground hover:underline">
             Privacy

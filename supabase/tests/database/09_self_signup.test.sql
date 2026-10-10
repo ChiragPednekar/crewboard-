@@ -1,4 +1,4 @@
--- Self sign-up: Google accounts that aren't on the allow-list wait for approval with no
+-- Self sign-up (opt-in requests mode): Google accounts that aren't on the allow-list wait for approval with no
 -- database access; email sign-ups stay invite-only; only admins approve or decline.
 begin;
 select plan(20);
@@ -7,6 +7,9 @@ insert into auth.users (instance_id, id, aud, role, email, email_confirmed_at, r
   ('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-4000-a000-000000000009', 'authenticated', 'authenticated',
    'su-admin@test.local', now(), '{"role":"admin"}', '{"full_name":"Signup Admin"}');
 update public.profiles set role = 'admin' where id = 'aaaaaaaa-0000-4000-a000-000000000009';
+
+-- these checks cover the opt-in "anyone with Google can request access" mode
+update public.app_settings set signup_mode = 'requests' where id;
 
 -- the gate on creating accounts ---------------------------------------------------
 select is(public.hook_before_user_created('{"user":{"email":"stranger@gmail.com","app_metadata":{"provider":"google"}}}'::jsonb),

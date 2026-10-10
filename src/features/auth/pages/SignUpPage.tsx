@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { CheckCircle2, Clock, MailPlus } from 'lucide-react';
+import { CheckCircle2, Clock, Lock, MailPlus } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 
-import { GoogleIcon, readOAuthError, useGoogleSignIn } from '../google';
+import { GoogleIcon, readOAuthError, useGoogleSignIn, useSignupRequestsOpen } from '../google';
 
 const STEPS = [
   {
@@ -24,6 +24,27 @@ const STEPS = [
 export default function SignUpPage() {
   const [formError, setFormError] = useState<string | null>(readOAuthError);
   const google = useGoogleSignIn(setFormError, '/signup');
+  const open = useSignupRequestsOpen();
+
+  if (open.data === false) {
+    return (
+      <div>
+        <span className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-background/40">
+          <Lock className="h-5 w-5 text-primary-text" aria-hidden />
+        </span>
+        <h1 className="mt-5 font-display text-[28px] font-semibold leading-tight">Invitation only</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          This CrewBoard is private to your studio. Ask your studio admin to add your email, then sign in with Google.
+        </p>
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          Already added?{' '}
+          <Link to="/login" className="font-medium text-primary-text hover:underline">
+            Sign in
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
