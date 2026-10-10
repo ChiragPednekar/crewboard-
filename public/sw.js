@@ -1,6 +1,6 @@
 // CrewBoard service worker: offline app shell + push notifications.
 // Bump VERSION to drop old caches after a deploy that changes this file.
-const VERSION = 'crewboard-v1';
+const VERSION = 'crewboard-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', '/theme-init.js'];
 
 self.addEventListener('install', (event) => {
@@ -72,7 +72,14 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = (event.notification.data && event.notification.data.url) || '/';
+  // only ever open pages of this app
+  let target = '/';
+  try {
+    const u = new URL((event.notification.data && event.notification.data.url) || '/', self.location.origin);
+    if (u.origin === self.location.origin) target = u.pathname + u.search + u.hash;
+  } catch (e) {
+    target = '/';
+  }
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
       for (const w of wins) {

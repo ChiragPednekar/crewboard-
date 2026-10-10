@@ -10,7 +10,7 @@
 // record the admin as the actor; only Auth admin calls use the service role.
 
 import { requireAdmin, serviceClient } from '../_shared/auth.ts';
-import { corsHeaders, errorResponse, HttpError, json } from '../_shared/http.ts';
+import { corsHeaders, enforceRateLimit, errorResponse, HttpError, json } from '../_shared/http.ts';
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -54,6 +54,7 @@ Deno.serve(async (req) => {
 
   try {
     const caller = await requireAdmin(req);
+    await enforceRateLimit(caller.db, 'admin-users', 60, 3600);
     const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
     if (!body || typeof body.action !== 'string') throw new HttpError(400, 'Missing action.');
     const admin = serviceClient();

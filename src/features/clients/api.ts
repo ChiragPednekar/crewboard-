@@ -154,7 +154,7 @@ export function useDeleteClient() {
   });
 }
 
-export const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+export const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 export const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 
 export function useUploadClientLogo() {
@@ -162,7 +162,7 @@ export function useUploadClientLogo() {
   return useMutation({
     ...CALLER_HANDLES_ERRORS,
     mutationFn: async ({ id, file }: { id: string; file: File }) => {
-      if (!LOGO_TYPES.includes(file.type)) throw new Error('Use a PNG, JPG, WebP or SVG image.');
+      if (!LOGO_TYPES.includes(file.type)) throw new Error('Use a PNG, JPG or WebP image.');
       if (file.size > LOGO_MAX_BYTES) throw new Error('The logo must be 2 MB or smaller.');
       const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
       const path = `${id}/logo-${Date.now()}.${ext}`;

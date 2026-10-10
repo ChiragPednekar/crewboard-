@@ -1,12 +1,12 @@
 // link-meta: title + thumbnail for a reference or deliverable link.
 //   POST { url } → { title?, description?, thumbnail?, site_name?, author? }
 //
-// Any signed-in user may call it. Because it fetches user-supplied URLs, every hop is
+// Any signed-in user may call it (60 previews per 10 minutes). Because it fetches user-supplied URLs, every hop is
 // checked: http(s) only, standard ports, no private/loopback/metadata addresses (also
 // after DNS resolution), at most 3 redirects, 5 s timeout and 512 KB of body.
 
 import { requireCaller } from '../_shared/auth.ts';
-import { corsHeaders, errorResponse, HttpError, json } from '../_shared/http.ts';
+import { corsHeaders, enforceRateLimit, errorResponse, HttpError, json } from '../_shared/http.ts';
 import {
   fromOembed,
   isPrivateAddress,
@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   try {
-    await requireCaller(req);
+    const caller = await requireCaller(req);
+    await enforceRateLimit(caller.db, 'link-meta', 60, 600);
     const body = (await req.json().catch(() => null)) as { url?: unknown } | null;
     const url = typeof body?.url === 'string' && body.url.length <= 2048 ? safeFetchUrl(body.url) : null;
     if (!url) throw new HttpError(400, 'Enter a public http(s) link.');
