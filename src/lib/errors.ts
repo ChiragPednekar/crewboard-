@@ -45,5 +45,7 @@ export function friendlyError(error: unknown): string {
     case 'PGRST116':
       return 'Not found.';
   }
+  // Other database errors can name tables or columns: never show those raw.
+  if (e.code) return 'Something went wrong. Please try again.';
   return message || 'Something went wrong.';
 }

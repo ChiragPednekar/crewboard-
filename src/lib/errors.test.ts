@@ -30,4 +30,7 @@ describe('friendlyError', () => {
     expect(friendlyError(null)).toBe('Something went wrong.');
     expect(friendlyError('Plain text')).toBe('Plain text');
   });
+  it('never shows raw database errors that could name tables or columns', () => {
+    expect(friendlyError({ code: '42703', message: 'column profiles.secret does not exist' })).toBe('Something went wrong. Please try again.');
+  });
 });

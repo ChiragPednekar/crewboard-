@@ -1,6 +1,6 @@
 -- Hardening: what signed-out visitors can reach, http(s)-only links, the rate limiter.
 begin;
-select plan(10);
+select plan(12);
 
 select is(
   (select coalesce(array_agg(c.relname::text order by c.relname), '{}') from pg_class c join pg_namespace n on n.oid = c.relnamespace
@@ -31,6 +31,10 @@ select throws_ok($$select public.submit_task('e1000000-0000-4000-a000-0000000000
   '23514', null, 'a javascript: link is refused by the database');
 select throws_ok($$select public.submit_task('e1000000-0000-4000-a000-00000000000c', array['https://ok.example/a b'])$$,
   '23514', null, 'so is a link with spaces');
+select throws_ok($$select public.submit_task('e1000000-0000-4000-a000-00000000000c', array['https://youtu.be/x'], null,
+                    'e1000000-0000-4000-a000-00000000000c/../other-task/x.jpg')$$, '23514', null, 'a thumbnail path cannot climb out of its folder');
+select throws_ok($$select public.submit_task('e1000000-0000-4000-a000-00000000000c', array['https://youtu.be/x'], null, null, 'app', null,
+                    'e1000000-0000-4000-a000-00000000000c/sub/dir.mp3', 'x.mp3')$$, '23514', null, 'nor can an audio path use sub-folders');
 select lives_ok($$select public.submit_task('e1000000-0000-4000-a000-00000000000c', array['https://youtu.be/x'])$$, 'a normal link is fine');
 
 -- rate limiter -----------------------------------------------------------------------

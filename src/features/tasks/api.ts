@@ -270,7 +270,7 @@ export const REF_FILE_TYPES = [
 export const REF_FILE_MAX_BYTES = 50 * 1024 * 1024;
 
 export function safeFileName(name: string): string {
-  const cleaned = name.normalize('NFKD').replace(/[^\w.\- ]+/g, '').replace(/\s+/g, '-').slice(-80);
+  const cleaned = name.normalize('NFKD').replace(/[^\w.\- ]+/g, '').replace(/\s+/g, '-').replace(/\.{2,}/g, '.').slice(-80);
   return cleaned.replace(/^[.-]+/, '') || 'file';
 }
 

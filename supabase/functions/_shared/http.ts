@@ -30,10 +30,15 @@ export class HttpError extends Error {
 
 export function errorResponse(err: unknown): Response {
   if (err instanceof HttpError) return json({ error: err.message }, err.status);
-  // PostgREST errors carry our RPC/trigger messages (already user-facing) plus a SQLSTATE.
+  // Our RPCs and triggers raise user-facing messages with these SQLSTATEs; any other
+  // database error could name tables or columns, so it gets a generic message.
   const pg = err as { message?: unknown; code?: unknown };
   if (typeof pg?.message === 'string' && typeof pg?.code === 'string') {
-    return json({ error: pg.message, code: pg.code }, pg.code === '42501' ? 403 : 400);
+    if (['22023', 'P0002', '55000', '42501'].includes(pg.code)) {
+      return json({ error: pg.message, code: pg.code }, pg.code === '42501' ? 403 : 400);
+    }
+    console.error(pg.code, pg.message);
+    return json({ error: 'That couldn’t be saved. Please check the details and try again.', code: pg.code }, 400);
   }
   console.error(err);
   return json({ error: 'Something went wrong on the server.' }, 500);
