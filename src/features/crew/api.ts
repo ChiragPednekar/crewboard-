@@ -118,11 +118,34 @@ export function useStartTask() {
 export const THUMB_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const THUMB_MAX_BYTES = 5 * 1024 * 1024;
 
+/** Audio a crew member can attach to a submission, by extension (browsers report audio MIME types inconsistently). */
+const AUDIO_EXT_TYPES: Record<string, string> = { mp3: 'audio/mpeg', wav: 'audio/wav', m4a: 'audio/mp4' };
+export const AUDIO_ACCEPT = '.mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/mp4';
+export const AUDIO_MAX_BYTES = 50 * 1024 * 1024;
+
+/** The content type to store an audio file with, or null if it isn't an MP3, WAV or M4A. */
+export function audioContentType(file: Pick<File, 'name'>): string | null {
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  return AUDIO_EXT_TYPES[ext] ?? null;
+}
+
 export function useSubmitTask() {
   const invalidate = useInvalidateCrewWork();
   return useMutation({
     ...CALLER_HANDLES_ERRORS,
-    mutationFn: async ({ taskId, links, notes, thumbnail }: { taskId: string; links: string[]; notes: string; thumbnail: File | null }) => {
+    mutationFn: async ({
+      taskId,
+      links,
+      notes,
+      thumbnail,
+      audio,
+    }: {
+      taskId: string;
+      links: string[];
+      notes: string;
+      thumbnail: File | null;
+      audio: File | null;
+    }) => {
       let thumbnailPath: string | undefined;
       if (thumbnail) {
         if (!THUMB_TYPES.includes(thumbnail.type)) throw new Error('The thumbnail must be a JPG, PNG or WebP image.');
@@ -132,11 +155,22 @@ export function useSubmitTask() {
         const { error: upErr } = await supabase.storage.from('thumbnails').upload(thumbnailPath, thumbnail, { contentType: thumbnail.type });
         if (upErr) throw upErr;
       }
+      let audioPath: string | undefined;
+      if (audio) {
+        const contentType = audioContentType(audio);
+        if (!contentType) throw new Error('The audio must be an MP3, WAV or M4A file.');
+        if (audio.size > AUDIO_MAX_BYTES) throw new Error('The audio file must be 50 MB or smaller.');
+        audioPath = `${taskId}/${crypto.randomUUID()}.${audio.name.split('.').pop()!.toLowerCase()}`;
+        const { error: upErr } = await supabase.storage.from('submission-audio').upload(audioPath, audio, { contentType });
+        if (upErr) throw upErr;
+      }
       const { data, error } = await supabase.rpc('submit_task', {
         p_task_id: taskId,
         p_links: links,
         p_notes: notes.trim() || undefined,
         p_thumbnail_path: thumbnailPath,
+        p_audio_path: audioPath,
+        p_audio_name: audio?.name,
       });
       if (error) throw error;
       return data;

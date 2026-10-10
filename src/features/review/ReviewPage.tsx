@@ -21,6 +21,7 @@ import { type PlayerHandle, VideoPlayer } from '@/components/VideoPlayer';
 import { CommentsPanel } from '@/features/comments/CommentsPanel';
 import { ClientApprovalCard } from '@/features/client-review/ClientApprovalCard';
 import { type TaskDetail, useTask, useTaskSubmissions, useThumbnailUrl } from '@/features/tasks/api';
+import { SubmissionAudio } from '@/features/tasks/SubmissionAudio';
 import { ReferencesCard } from '@/features/tasks/ReferencesCard';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
@@ -206,7 +207,8 @@ function SubmissionView({
           <VideoEmbed key={`${s.id}-${l}`} url={l} title={`${title}, link ${i + 1}`} />
         ),
       )}
-      {s.links.length === 0 && <p className="text-sm text-muted-foreground">Marked Completed in the sheet, without a link.</p>}
+      {s.audio_path && <SubmissionAudio path={s.audio_path} name={s.audio_name} />}
+      {s.links.length === 0 && !s.audio_path && <p className="text-sm text-muted-foreground">Marked Completed in the sheet, without a link.</p>}
       {s.notes && (
         <blockquote className="border-l-2 border-primary/50 pl-3 text-sm text-muted-foreground">
           <span className="whitespace-pre-line">{s.notes}</span>

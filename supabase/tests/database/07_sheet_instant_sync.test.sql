@@ -31,7 +31,7 @@ select is((select cardinality(links) from public.submissions where task_id = 'e1
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-4000-a000-000000000007","role":"authenticated"}', true);
 select throws_ok($$select public.submit_task('e2000000-0000-4000-a000-000000000007', '{}')$$,
-  '22023', 'Add at least one deliverable link', 'the app form still needs a link');
+  '22023', 'Add at least one deliverable link or an audio file', 'the app form still needs a link');
 select throws_ok($$select * from public.issue_sheet_ping_tokens('spreadsheetINSTANTAAAAAAAAA')$$,
   '42501', null, 'videographers cannot create sheet scripts');
 

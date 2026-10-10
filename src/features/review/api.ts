@@ -20,7 +20,7 @@ export interface QueueItem {
   videographer: { id: string; full_name: string; avatar_url: string | null } | null;
   client: { name: string; logo_url: string | null } | null;
   category: { name: string } | null;
-  submissions: { version: number; is_on_time: boolean; thumbnail_path: string | null; links: string[]; source: string }[];
+  submissions: { version: number; is_on_time: boolean; thumbnail_path: string | null; audio_path: string | null; links: string[]; source: string }[];
 }
 
 /** Submitted work, oldest first (first in, first reviewed). */
@@ -31,7 +31,7 @@ export function useReviewQueue() {
       const { data, error } = await supabase
         .from('tasks')
         .select(
-          'id, title, status, due_date, max_points, month, first_submitted_at, last_submitted_at, videographer:profiles!tasks_videographer_id_fkey(id, full_name, avatar_url), client:clients(name, logo_url), category:task_categories(name), submissions(version, is_on_time, thumbnail_path, links, source)',
+          'id, title, status, due_date, max_points, month, first_submitted_at, last_submitted_at, videographer:profiles!tasks_videographer_id_fkey(id, full_name, avatar_url), client:clients(name, logo_url), category:task_categories(name), submissions(version, is_on_time, thumbnail_path, audio_path, links, source)',
         )
         .eq('status', 'submitted')
         .order('last_submitted_at', { ascending: true })

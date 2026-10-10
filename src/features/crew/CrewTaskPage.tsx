@@ -18,6 +18,7 @@ import { type PlayerHandle, VideoPlayer } from '@/components/VideoPlayer';
 import { CommentsPanel } from '@/features/comments/CommentsPanel';
 import { useTaskSubmissions } from '@/features/tasks/api';
 import { ReferencesCard } from '@/features/tasks/ReferencesCard';
+import { SubmissionAudio } from '@/features/tasks/SubmissionAudio';
 import { dueLabel, formatDate, formatDateTime, isOverdue, toMonthKey } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
 import { isTrackableVideo } from '@/lib/links';
@@ -160,7 +161,10 @@ export default function CrewTaskPage() {
                           {s.links.map((l) => (
                             <LinkPreviewCard key={l} url={l} />
                           ))}
-                          {s.links.length === 0 && <p className="text-sm text-muted-foreground">You marked this Completed in your sheet, without a link.</p>}
+                          {s.audio_path && <SubmissionAudio path={s.audio_path} name={s.audio_name} />}
+                          {s.links.length === 0 && !s.audio_path && (
+                            <p className="text-sm text-muted-foreground">You marked this Completed in your sheet, without a link.</p>
+                          )}
                         </div>
                         {s.thumbnail_path && <Thumb path={s.thumbnail_path} />}
                         {s.notes && <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">“{s.notes}”</p>}

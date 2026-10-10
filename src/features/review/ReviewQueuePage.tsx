@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ArrowRight, CheckCheck, FileSpreadsheet, Film } from 'lucide-react';
+import { ArrowRight, CheckCheck, FileSpreadsheet, Film, Music } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -89,7 +89,7 @@ function QueueCard({ item: t }: { item: QueueItem }) {
           <img src={image} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" onError={() => setImgFailed(true)} />
         ) : (
           <span className="grid h-full w-full place-items-center text-muted-foreground">
-            <Film className="h-6 w-6" aria-hidden />
+            {sub?.audio_path && !firstLink ? <Music className="h-6 w-6" aria-label="Audio submission" /> : <Film className="h-6 w-6" aria-hidden />}
           </span>
         )}
         {sub && sub.version > 1 && (

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { clientSchema, emptyClient } from '@/features/clients/schemas';
+import { audioContentType } from '@/features/crew/api';
 import { submitSchema } from '@/features/crew/SubmitDialog';
 import { taskFormSchema } from '@/features/tasks/schemas';
 import { inviteSchema } from '@/features/videographers/schemas';
@@ -61,6 +62,21 @@ describe('submission form', () => {
     expect(messages(submitSchema.safeParse({ links: [{ url: 'drive folder' }], notes: '' }))['links.0.url']).toMatch(/full link/);
     expect(messages(submitSchema.safeParse({ links: [{ url: 'https://youtu.be/a' }, { url: 'https://YOUTU.be/a' }], notes: '' }))['links.1.url']).toBe('This link is already in the list');
     expect(submitSchema.safeParse({ links: Array.from({ length: 6 }, (_, i) => ({ url: `https://a.b/${i}` })), notes: '' }).success).toBe(false);
+  });
+
+  it('allows a blank row (an audio file can stand in for links)', () => {
+    expect(submitSchema.safeParse({ links: [{ url: '' }], notes: '' }).success).toBe(true);
+    expect(submitSchema.safeParse({ links: [{ url: '' }, { url: ' ' }], notes: '' }).success).toBe(true);
+  });
+});
+
+describe('audio attachments', () => {
+  it('accepts MP3, WAV and M4A by extension', () => {
+    expect(audioContentType({ name: 'Final VO.MP3' })).toBe('audio/mpeg');
+    expect(audioContentType({ name: 'mix.wav' })).toBe('audio/wav');
+    expect(audioContentType({ name: 'take.m4a' })).toBe('audio/mp4');
+    expect(audioContentType({ name: 'clip.mp4' })).toBeNull();
+    expect(audioContentType({ name: 'noext' })).toBeNull();
   });
 });
 

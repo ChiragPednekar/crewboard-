@@ -45,7 +45,7 @@ select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-4000-a000-0000000
 select is((public.start_task('ea000000-0000-4000-a000-000000000002')).status, 'in_progress'::public.task_status,
   'start_task moves to in progress');
 select throws_ok($$select public.submit_task('ea000000-0000-4000-a000-000000000002', array['   ', ''])$$,
-  '22023', 'Add at least one deliverable link', 'blank links are rejected');
+  '22023', 'Add at least one deliverable link or an audio file', 'blank links are rejected');
 select throws_ok($$select public.submit_task('ea000000-0000-4000-a000-000000000002', array['ftp://nope'])$$,
   '23514', null, 'non-http links are rejected');
 select throws_ok($$select public.submit_task('ea000000-0000-4000-a000-000000000002',

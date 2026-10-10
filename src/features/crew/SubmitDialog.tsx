@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlarmClock, ImagePlus, Plus, Send, X } from 'lucide-react';
+import { AlarmClock, ImagePlus, Music, Plus, Send, X } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -18,17 +18,19 @@ import { friendlyError } from '@/lib/errors';
 import { isHttpUrl } from '@/lib/links';
 import type { Task } from '@/lib/supabase';
 
-import { THUMB_MAX_BYTES, THUMB_TYPES, useSubmitTask } from './api';
+import { AUDIO_ACCEPT, AUDIO_MAX_BYTES, audioContentType, THUMB_MAX_BYTES, THUMB_TYPES, useSubmitTask } from './api';
 
 export const submitSchema = z.object({
   links: z
-    .array(z.object({ url: z.string().trim().refine(isHttpUrl, 'Paste the full link, starting with https://') }))
+    // a blank row is fine here: an audio file can stand in for links (checked on submit)
+    .array(z.object({ url: z.string().trim().refine((v) => v === '' || isHttpUrl(v), 'Paste the full link, starting with https://') }))
     .min(1, 'Add at least one link')
     .max(5, 'You can submit at most 5 links')
     .superRefine((links, ctx) => {
       const seen = new Set<string>();
       links.forEach((l, i) => {
         const key = l.url.trim().toLowerCase();
+        if (!key) return;
         if (seen.has(key)) ctx.addIssue({ code: 'custom', path: [i, 'url'], message: 'This link is already in the list' });
         seen.add(key);
       });
@@ -36,6 +38,8 @@ export const submitSchema = z.object({
   notes: z.string().trim().max(4000, 'Keep notes under 4000 characters'),
 });
 export type SubmitValues = z.infer<typeof submitSchema>;
+
+const fileSize = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`);
 
 interface SubmitDialogProps {
   open: boolean;
@@ -52,6 +56,10 @@ export function SubmitDialog({ open, onOpenChange, task, previousLinks, isResubm
   const [thumb, setThumb] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [thumbError, setThumbError] = useState<string | null>(null);
+  const audioRef = useRef<HTMLInputElement>(null);
+  const [audio, setAudio] = useState<File | null>(null);
+  const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   const defaults: SubmitValues = {
     links: (previousLinks?.length ? previousLinks : ['']).map((url) => ({ url })),
@@ -64,7 +72,19 @@ export function SubmitDialog({ open, onOpenChange, task, previousLinks, isResubm
     form.reset(defaults);
     setThumb(null);
     setThumbError(null);
+    setAudio(null);
+    setAudioError(null);
   });
+
+  useEffect(() => {
+    if (!audio) {
+      setAudioPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(audio);
+    setAudioPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [audio]);
 
   useEffect(() => {
     if (!thumb) {
@@ -87,9 +107,23 @@ export function SubmitDialog({ open, onOpenChange, task, previousLinks, isResubm
     setThumb(file);
   }
 
+  function pickAudio(file: File | undefined) {
+    if (!file) return;
+    if (!audioContentType(file)) return setAudioError('Use an MP3, WAV or M4A file.');
+    if (file.size > AUDIO_MAX_BYTES) return setAudioError('The audio file must be 50 MB or smaller.');
+    setAudioError(null);
+    setAudio(file);
+    form.clearErrors('links');
+  }
+
   function onSubmit(values: SubmitValues) {
+    const urls = values.links.map((l) => l.url.trim()).filter(Boolean);
+    if (urls.length === 0 && !audio) {
+      form.setError('links.0.url', { message: 'Paste a link or attach an audio file' });
+      return;
+    }
     submit.mutate(
-      { taskId: task.id, links: values.links.map((l) => l.url.trim()), notes: values.notes, thumbnail: thumb },
+      { taskId: task.id, links: urls, notes: values.notes, thumbnail: thumb, audio },
       {
         onSuccess: (s) => {
           toast.success(s && s.version > 1 ? `Version ${s.version} submitted` : 'Submitted for review', {
@@ -159,6 +193,47 @@ export function SubmitDialog({ open, onOpenChange, task, previousLinks, isResubm
                 <p className="text-sm text-danger-text">{form.formState.errors.links.root.message}</p>
               )}
             </fieldset>
+
+            <div className="space-y-2">
+              <Label htmlFor="audio-input">Audio file</Label>
+              <p className="text-sm text-muted-foreground">Optional. A voice-over, music track or audio-only deliverable — MP3, WAV or M4A, up to 50 MB.</p>
+              {audio ? (
+                <div className="space-y-2 rounded-lg border border-border p-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Music className="h-4 w-4 shrink-0 text-primary-text" aria-hidden />
+                    <span className="min-w-0 flex-1 truncate font-medium" title={audio.name}>
+                      {audio.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{fileSize(audio.size)}</span>
+                    <Button type="button" variant="ghost" size="icon-sm" onClick={() => setAudio(null)} aria-label="Remove audio file">
+                      <X />
+                    </Button>
+                  </div>
+                  {/* eslint-disable-next-line jsx-a11y/media-has-caption -- crew-uploaded audio has no caption track */}
+                  {audioPreview && <audio controls preload="metadata" src={audioPreview} className="w-full" aria-label={`Preview of ${audio.name}`} />}
+                </div>
+              ) : (
+                <Button type="button" variant="secondary" size="sm" onClick={() => audioRef.current?.click()}>
+                  <Music /> Choose audio file
+                </Button>
+              )}
+              <input
+                id="audio-input"
+                ref={audioRef}
+                type="file"
+                accept={AUDIO_ACCEPT}
+                className="sr-only"
+                onChange={(e) => {
+                  pickAudio(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+              {audioError && (
+                <p className="text-sm text-danger-text" role="alert">
+                  {audioError}
+                </p>
+              )}
+            </div>
 
             <FormField
               control={form.control}

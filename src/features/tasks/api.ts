@@ -331,6 +331,20 @@ export function useFileUrl(path: string | null, enabled = true) {
 }
 
 /** Signed URL for a submission thumbnail (private bucket). */
+/** A short-lived link to play a submission's audio file. */
+export function useAudioUrl(path: string | null) {
+  return useQuery({
+    queryKey: ['audio', path ?? ''],
+    enabled: Boolean(path),
+    staleTime: 50 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage.from('submission-audio').createSignedUrl(path!, 60 * 60);
+      if (error) throw error;
+      return data.signedUrl;
+    },
+  });
+}
+
 export function useThumbnailUrl(path: string | null) {
   return useQuery({
     queryKey: ['thumb', path ?? ''],

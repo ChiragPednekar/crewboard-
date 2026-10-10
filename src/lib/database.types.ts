@@ -1143,6 +1143,8 @@ export type Database = {
       }
       submissions: {
         Row: {
+          audio_name: string | null
+          audio_path: string | null
           created_at: string
           id: string
           is_on_time: boolean
@@ -1156,6 +1158,8 @@ export type Database = {
           version: number
         }
         Insert: {
+          audio_name?: string | null
+          audio_path?: string | null
           created_at?: string
           id?: string
           is_on_time?: boolean
@@ -1169,6 +1173,8 @@ export type Database = {
           version: number
         }
         Update: {
+          audio_name?: string | null
+          audio_path?: string | null
           created_at?: string
           id?: string
           is_on_time?: boolean
@@ -2452,6 +2458,8 @@ export type Database = {
       }
       submit_task: {
         Args: {
+          p_audio_name?: string
+          p_audio_path?: string
           p_links: string[]
           p_notes?: string
           p_source?: Database["public"]["Enums"]["submission_source"]
@@ -2460,6 +2468,8 @@ export type Database = {
           p_thumbnail_path?: string
         }
         Returns: {
+          audio_name: string | null
+          audio_path: string | null
           created_at: string
           id: string
           is_on_time: boolean
