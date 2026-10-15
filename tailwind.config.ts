@@ -11,8 +11,9 @@ export default {
     extend: {
       opacity: { 8: '0.08', 12: '0.12', 35: '0.35', 65: '0.65' },
       fontFamily: {
-        sans: ['"Inter Variable"', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Space Grotesk Variable"', '"Space Grotesk"', '"Inter Variable"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['"Instrument Sans Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Archivo Variable"', '"Instrument Sans Variable"', 'ui-sans-serif', 'sans-serif'],
+        mono: ['"JetBrains Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       colors: {
         background: token('background'),
@@ -44,8 +45,8 @@ export default {
         sm: 'calc(var(--radius) - 6px)',
       },
       boxShadow: {
-        soft: '0 1px 2px hsl(var(--shadow) / 0.10), 0 8px 24px -12px hsl(var(--shadow) / 0.35)',
-        lift: '0 2px 4px hsl(var(--shadow) / 0.12), 0 18px 40px -16px hsl(var(--shadow) / 0.45)',
+        soft: 'inset 0 1px 0 hsl(var(--highlight)), 0 1px 2px hsl(var(--shadow) / 0.10), 0 8px 24px -12px hsl(var(--shadow) / 0.35)',
+        lift: 'inset 0 1px 0 hsl(var(--highlight)), 0 2px 4px hsl(var(--shadow) / 0.12), 0 18px 40px -16px hsl(var(--shadow) / 0.45)',
         glow: '0 0 0 1px hsl(var(--primary) / 0.35), 0 10px 40px -12px hsl(var(--primary) / 0.45)',
       },
       keyframes: {

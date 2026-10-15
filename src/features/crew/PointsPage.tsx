@@ -66,7 +66,7 @@ export default function PointsPage() {
             ) : (
               <Card className="studio-glow">
                 <CardContent className="p-5 sm:p-6">
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Live this month · provisional</p>
+                  <p className="slate text-muted-foreground">Live this month · provisional</p>
                   <p className="tabular mt-1 font-display text-5xl font-semibold text-primary-text">
                     {live.points}
                     <span className="text-xl text-muted-foreground"> / {live.max} pts</span>

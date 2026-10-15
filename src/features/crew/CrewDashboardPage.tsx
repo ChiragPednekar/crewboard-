@@ -177,19 +177,21 @@ export default function CrewDashboardPage() {
 
 function StatTile({ icon: Icon, label, value, tone }: { icon: typeof CalendarClock; label: string; value: number | string; tone?: 'violet' | 'info' | 'danger' | 'success' }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-4 shadow-soft">
-      <Icon
-        className={cn(
-          'h-4 w-4 text-muted-foreground',
-          tone === 'violet' && 'text-violet-text',
-          tone === 'info' && 'text-info-text',
-          tone === 'danger' && 'text-danger-text',
-          tone === 'success' && 'text-success-text',
-        )}
-        aria-hidden
-      />
-      <p className="tabular mt-3 font-display text-2xl font-semibold">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className="flex flex-col rounded-xl border border-border bg-surface p-4 shadow-soft">
+      <div className="flex items-start justify-between gap-2">
+        <p className="slate text-muted-foreground">{label}</p>
+        <Icon
+          className={cn(
+            'h-4 w-4 shrink-0 text-muted-foreground',
+            tone === 'violet' && 'text-violet-text',
+            tone === 'info' && 'text-info-text',
+            tone === 'danger' && 'text-danger-text',
+            tone === 'success' && 'text-success-text',
+          )}
+          aria-hidden
+        />
+      </div>
+      <p className="tabular mt-auto pt-4 font-display text-[30px] font-semibold leading-none">{value}</p>
     </div>
   );
 }
@@ -206,7 +208,7 @@ function UpNext({ task }: { task: CrewTask }) {
       )}
     >
       <div className="min-w-0 flex-1">
-        <p className={cn('text-xs font-medium uppercase tracking-[0.14em]', revision ? 'text-danger-text' : 'text-primary-text')}>
+        <p className={cn('slate', revision ? 'text-danger-text' : 'text-primary-text')}>
           {revision ? 'Changes requested' : 'Up next'}
         </p>
         <p className="mt-1 truncate font-display text-lg font-semibold">{task.title}</p>

@@ -59,9 +59,9 @@ export default function StyleguidePage() {
               <CardTitle>Typography</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="font-display text-4xl font-semibold">Space Grotesk 36</p>
+              <p className="font-display text-4xl font-semibold">Archivo Expanded 36</p>
               <p className="font-display text-2xl font-semibold">Page title 28</p>
-              <p className="text-base">Inter body 16 — the quick brown fox films the lazy dog.</p>
+              <p className="text-base">Instrument Sans body 16 — the quick brown fox films the lazy dog.</p>
               <p className="text-sm text-muted-foreground">Muted 14 — secondary information and hints.</p>
               <p className="tabular font-display text-5xl font-semibold text-primary-text">93.03</p>
             </CardContent>

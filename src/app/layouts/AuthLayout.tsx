@@ -16,20 +16,17 @@ export function AuthLayout() {
       {/* Brand panel */}
       <aside className="relative hidden overflow-hidden border-r border-border bg-surface lg:flex lg:flex-col lg:justify-between lg:p-12">
         <div className="studio-glow absolute inset-0" aria-hidden />
-        <div
-          className="absolute inset-0 opacity-[0.07] [background-image:linear-gradient(hsl(var(--foreground))_1px,transparent_1px),linear-gradient(90deg,hsl(var(--foreground))_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_at_30%_40%,black,transparent_70%)]"
-          aria-hidden
-        />
+        <div className="grade-line absolute inset-x-0 top-0 h-[3px]" aria-hidden />
         <Logo className="relative" />
-        <div className="relative max-w-md">
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-primary-text">Production crew portal</p>
-          <h2 className="font-display text-4xl font-semibold leading-[1.1]">
+        <div className="relative max-w-lg">
+          <p className="slate mb-4 text-primary-text">Production crew portal</p>
+          <h2 className="font-display text-[42px] font-semibold leading-[1.04]">
             Every shoot, every deliverable, <span className="text-primary-text">every win</span> — on one board.
           </h2>
           <ul className="mt-10 space-y-6">
             {HIGHLIGHTS.map(({ icon: Icon, title, body }) => (
               <li key={title} className="flex gap-4">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-surface-2 text-primary-text">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-background/60 text-violet-text">
                   <Icon className="h-5 w-5" aria-hidden />
                 </span>
                 <span>
@@ -40,7 +37,7 @@ export function AuthLayout() {
             ))}
           </ul>
         </div>
-        <p className="relative text-xs text-muted-foreground">Times shown in India Standard Time (IST).</p>
+        <p className="slate relative text-muted-foreground">Times shown in India Standard Time (IST)</p>
       </aside>
 
       {/* Form panel */}

@@ -27,7 +27,7 @@ export function ScoreBreakdown({
 
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+      <p className="slate text-muted-foreground">{label}</p>
       <p className="tabular mt-1 font-display text-5xl font-semibold text-primary-text">{score.totalScore.toFixed(2)}</p>
       <p className="mt-1 text-sm text-muted-foreground">
         out of 100{bonus > 0 && ` · base ${score.baseScore.toFixed(2)} + ${bonus} bonus`}

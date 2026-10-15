@@ -1,6 +1,6 @@
 // CrewBoard service worker: offline app shell + push notifications.
 // Bump VERSION to drop old caches after a deploy that changes this file.
-const VERSION = 'crewboard-v2';
+const VERSION = 'crewboard-v3';
 const SHELL = ['/', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', '/theme-init.js'];
 
 self.addEventListener('install', (event) => {

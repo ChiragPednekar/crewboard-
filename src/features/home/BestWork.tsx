@@ -89,7 +89,7 @@ export function BestWork({ items, month }: { items: FeaturedItem[]; month: strin
         >
           <Player item={best} large />
           <div className="min-w-0">
-            <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.14em] text-gold-text">
+            <p className="inline-flex items-center gap-1.5 slate text-gold-text">
               <Sparkles className="h-3.5 w-3.5" aria-hidden /> Best work of {formatMonth(month, 'MMMM')}
             </p>
             <h3 id="best-work-title" className="mt-2 font-display text-xl font-semibold leading-tight sm:text-2xl">

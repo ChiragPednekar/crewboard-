@@ -1,5 +1,6 @@
-import '@fontsource-variable/inter';
-import '@fontsource-variable/space-grotesk';
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/instrument-sans/wdth.css';
+import '@fontsource-variable/jetbrains-mono';
 import './index.css';
 
 import { StrictMode } from 'react';
@@ -16,7 +17,7 @@ registerServiceWorker();
 
 if (envError) {
   root.render(
-    <div style={{ fontFamily: 'system-ui', padding: 32, color: '#EDEDF2', background: '#0B0B0F', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'system-ui', padding: 32, color: '#ECE4D6', background: '#0B1315', minHeight: '100vh' }}>
       <h1 style={{ fontSize: 20 }}>CrewBoard isn’t configured</h1>
       <p style={{ opacity: 0.75 }}>{envError}</p>
       <p style={{ opacity: 0.75 }}>Copy .env.example to .env.local and fill in your Supabase URL and anon key.</p>

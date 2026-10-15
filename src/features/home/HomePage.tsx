@@ -238,7 +238,7 @@ function TopPerformerCard({
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center lg:flex-col lg:items-start xl:flex-row xl:items-center">
         <UserAvatar name={data.full_name} src={data.avatar_url} ring="gold" className="h-20 w-20 text-2xl sm:h-24 sm:w-24 sm:text-3xl" />
         <div className="min-w-0">
-          <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.14em] text-gold-text">
+          <p className="inline-flex items-center gap-1.5 slate text-gold-text">
             <Trophy className="h-3.5 w-3.5" aria-hidden /> {provisional ? 'Leading so far' : `Top performer · ${formatMonth(month)}`}
           </p>
           <h2 id="top-performer" className="mt-1 break-words font-display text-3xl font-semibold sm:text-4xl">
@@ -276,17 +276,19 @@ function TeamStatsRow({ stats, loading }: { stats: ReturnType<typeof useTeamStat
   return (
     <section aria-label="Team stats" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {items.map((s) => (
-        <div key={s.label} className="rounded-xl border border-border bg-surface p-4 shadow-soft">
-          <s.icon className={cn('h-4 w-4', s.tone)} aria-hidden />
+        <div key={s.label} className="flex flex-col rounded-xl border border-border bg-surface p-4 shadow-soft sm:p-5">
+          <div className="flex items-start justify-between gap-2">
+            <p className="slate text-muted-foreground">{s.label}</p>
+            <s.icon className={cn('h-4 w-4 shrink-0', s.tone)} aria-hidden />
+          </div>
           {loading ? (
-            <Skeleton className="mt-3 h-8 w-16" />
+            <Skeleton className="mt-auto h-9 w-16" />
           ) : (
-            <p className="tabular mt-3 font-display text-3xl font-semibold">
+            <p className="tabular mt-auto pt-4 font-display text-[34px] font-semibold leading-none">
               <CountUp value={s.value} />
               {s.suffix}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">{s.label}</p>
         </div>
       ))}
     </section>

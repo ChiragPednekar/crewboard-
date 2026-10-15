@@ -88,7 +88,7 @@ export default function NotificationsPage() {
         <div className="max-w-3xl space-y-6">
           {groups.map(([label, items]) => (
             <section key={label} aria-labelledby={`notif-${label}`}>
-              <h2 id={`notif-${label}`} className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <h2 id={`notif-${label}`} className="mb-2 slate text-muted-foreground">
                 {label}
               </h2>
               <Card className="overflow-hidden p-0">

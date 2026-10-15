@@ -64,7 +64,7 @@ export default function ApprovePage() {
             <div className="mb-6 flex items-center gap-3">
               {r.client && <ClientLogo name={r.client} src={r.client_logo ?? null} className="h-11 w-11" />}
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-primary-text">
+                <p className="slate text-primary-text">
                   {[r.client, r.category].filter(Boolean).join(' · ')}
                 </p>
                 <h1 className="font-display text-2xl font-semibold sm:text-3xl">{r.title}</h1>

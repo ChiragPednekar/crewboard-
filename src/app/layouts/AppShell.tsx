@@ -71,7 +71,7 @@ export function AppShell() {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-surface/70 transition-[width] duration-200 lg:flex',
+          'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border/70 bg-surface/60 transition-[width] duration-200 lg:flex',
           collapsed ? 'w-[76px]' : 'w-[252px]',
         )}
         aria-label="Main navigation"
@@ -99,7 +99,8 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background/80 px-3 backdrop-blur-md sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border/70 bg-background/80 px-3 backdrop-blur-md sm:px-6">
+          <div className="grade-line pointer-events-none absolute inset-x-0 top-0 h-[2px] opacity-80" aria-hidden />
           {!isCrew && (
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
@@ -174,9 +175,7 @@ function SidebarNav({
             (collapsed ? (
               <div className="mx-auto mb-2 h-px w-6 bg-border" aria-hidden />
             ) : (
-              <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {group.label}
-              </p>
+              <p className="slate mb-2 px-3 text-muted-foreground/80">{group.label}</p>
             ))}
           <ul className="space-y-1">
             {group.items.map((item) => (
@@ -210,8 +209,8 @@ function SidebarLink({ item, collapsed, count }: { item: NavItem; collapsed: boo
           'group relative flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors',
           collapsed && 'justify-center px-0',
           isActive
-            ? 'bg-surface-2 text-foreground'
-            : 'text-muted-foreground hover:bg-surface-2/60 hover:text-foreground',
+            ? 'bg-gradient-to-r from-primary/15 via-primary/5 to-transparent text-foreground'
+            : 'text-muted-foreground hover:bg-surface-2/70 hover:text-foreground',
         )
       }
     >

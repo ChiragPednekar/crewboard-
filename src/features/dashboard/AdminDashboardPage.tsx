@@ -197,13 +197,15 @@ function Kpi({
 }) {
   const body = (
     <>
-      <Icon className={cn('h-4 w-4 text-muted-foreground', tone)} aria-hidden />
-      {value === null ? <Skeleton className="mt-3 h-8 w-16" /> : <p className="tabular mt-3 font-display text-3xl font-semibold">{value}</p>}
-      <p className="text-sm">{label}</p>
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      <div className="flex items-start justify-between gap-2">
+        <p className="slate text-muted-foreground">{label}</p>
+        <Icon className={cn('h-4 w-4 shrink-0 text-muted-foreground', tone)} aria-hidden />
+      </div>
+      {value === null ? <Skeleton className="mt-4 h-9 w-16" /> : <p className="tabular mt-auto pt-4 font-display text-[34px] font-semibold leading-none">{value}</p>}
+      {hint && <p className="mt-2 text-xs text-muted-foreground">{hint}</p>}
     </>
   );
-  const cls = cn('rounded-xl border border-border bg-surface p-4 shadow-soft', to && 'transition-[border-color] hover:border-primary/40', className);
+  const cls = cn('flex flex-col rounded-xl border border-border bg-surface p-4 shadow-soft sm:p-5', to && 'transition-[border-color] hover:border-primary/40', className);
   return to ? (
     <Link to={to} className={cls}>
       {body}
